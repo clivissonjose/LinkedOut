@@ -8,6 +8,7 @@ import com.VA2ES.backend.repositories.UserRepository;
 import com.VA2ES.backend.security.TokenService;
 import com.VA2ES.backend.services.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -43,9 +46,13 @@ public class AuthController {
     public ResponseEntity  login(@RequestBody @Valid AuthDTO authDTO) {
         var usernamePassword = new UsernamePasswordAuthenticationToken(
             authDTO.getEmail(), authDTO.getPassword());
+
         var auth = this.authenticationManager.authenticate(usernamePassword);
+
         var token = tokenService.generateToken((User) auth.getPrincipal());
+
         return ResponseEntity.ok( new LoginResponseDTO(token));
+
     }
 
     @PostMapping("/register")
@@ -53,13 +60,21 @@ public class AuthController {
 
         String encryptedPassword = new BCryptPasswordEncoder().encode(registerDto.getPassword());
 
-       // User newUser = new User(registerDto.getEmail(), encryptedPassword, registerDto.getRole(), registerDto.getNome());
-        //  public User(String email, String encriptedPassword, UserRole role, String nome) {
         User newUser = this.authService.register(registerDto);
 
-      //  this.userRepository.save(newUser);
 
-        return  ResponseEntity.ok("Usuário registrado com sucesso");
+       // return  ResponseEntity.ok("Usuário registrado com sucesso");
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(Map.of(
+                        "message", "Usuário registrado com sucesso",
+                        "user", Map.of(
+                                "email", newUser.getEmail(),
+                                "nome", newUser.getNome(),
+                                "role", newUser.getRole().toString()
+                        )
+                ));
     }
 
 }
