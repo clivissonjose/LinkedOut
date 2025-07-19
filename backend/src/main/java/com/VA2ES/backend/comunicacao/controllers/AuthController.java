@@ -1,9 +1,11 @@
 package com.VA2ES.backend.comunicacao.controllers;
 
 import com.VA2ES.backend.comunicacao.dto.AuthDTO;
+import com.VA2ES.backend.comunicacao.dto.LoginResponseDTO;
 import com.VA2ES.backend.comunicacao.dto.RegisterDTO;
 import com.VA2ES.backend.models.User;
 import com.VA2ES.backend.repositories.UserRepository;
+import com.VA2ES.backend.security.TokenService;
 import com.VA2ES.backend.services.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,13 +27,16 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @Autowired
     private UserRepository userRepository;
 
+    private TokenService tokenService;
+
     public AuthController(AuthenticationManager authenticationManager,
-        AuthService authService) {
+        AuthService authService, UserRepository userRepository, TokenService tokenService) {
             this.authenticationManager = authenticationManager;
             this.authService = authService;
+            this.userRepository = userRepository;
+            this.tokenService = tokenService;
     }
 
     @PostMapping("/login")
@@ -39,7 +44,8 @@ public class AuthController {
         var usernamePassword = new UsernamePasswordAuthenticationToken(
             authDTO.getEmail(), authDTO.getPassword());
         var auth = this.authenticationManager.authenticate(usernamePassword);
-        return ResponseEntity.ok().build();
+        var token = tokenService.generateToken((User) auth.getPrincipal());
+        return ResponseEntity.ok( new LoginResponseDTO(token));
     }
 
     @PostMapping("/register")
