@@ -46,15 +46,31 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    if (!token) return false;
+
+    try {
+      const decoded: any = jwtDecode(token);
+      const exp = decoded.exp;
+
+      if (!exp) return true; // Se não tiver expiração definida no token, assume-se válido
+
+      const now = Math.floor(Date.now() / 1000);
+      return exp > now;
+    } catch (error) {
+      console.warn('Token inválido ou malformado:', error);
+      this.logout(); // Remove token inválido
+      return false;
+    }
   }
 
   hasRole(requiredRole: string): boolean {
     const token = this.getToken();
     if (!token) return false;
+
     try {
-      const decodedToken: any = jwtDecode(token);
-      return decodedToken.role === requiredRole;
+      const decoded: any = jwtDecode(token);
+      return decoded.role === requiredRole;
     } catch {
       return false;
     }
