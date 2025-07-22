@@ -77,4 +77,9 @@ public class AuthController {
                 ));
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        return ResponseEntity.ok(Map.of("message", "Logout realizado com sucesso. O token deve ser removido no cliente."));
+    }
+
 }
