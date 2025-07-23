@@ -1,0 +1,37 @@
+.unauthorized-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f8d7da;
+  padding: 20px;
+}
+
+.unauthorized-box {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 400px;
+}
+
+h1 {
+  color: #721c24;
+  margin-bottom: 1rem;
+}
+
+p {
+  color: #444;
+  margin-bottom: 1.5rem;
+}
+
+.back-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
