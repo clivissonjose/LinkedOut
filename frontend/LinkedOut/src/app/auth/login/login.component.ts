@@ -35,7 +35,8 @@ import { AuthService } from '../auth.service';
     input.invalid {
       border-color: red;
     }
-  `]
+  `],
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
   private fb = inject(FormBuilder);
