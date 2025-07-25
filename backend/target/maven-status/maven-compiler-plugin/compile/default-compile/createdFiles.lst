@@ -1,0 +1,17 @@
+com\VA2ES\backend\models\User.class
+com\VA2ES\backend\BackendApplication.class
+com\VA2ES\backend\dto\LoginResponseDTO.class
+com\VA2ES\backend\models\enums\UserRole.class
+com\VA2ES\backend\controllers\UserController.class
+com\VA2ES\backend\security\SecurityConfig.class
+com\VA2ES\backend\security\SecurityFilter.class
+com\VA2ES\backend\services\UserService.class
+com\VA2ES\backend\dto\RegisterDTO.class
+com\VA2ES\backend\dto\UpdateNameDTO.class
+com\VA2ES\backend\repositories\UserRepository.class
+com\VA2ES\backend\security\TokenService.class
+com\VA2ES\backend\controllers\AuthController.class
+com\VA2ES\backend\CorsConfig$1.class
+com\VA2ES\backend\dto\AuthDTO.class
+com\VA2ES\backend\services\AuthService.class
+com\VA2ES\backend\CorsConfig.class

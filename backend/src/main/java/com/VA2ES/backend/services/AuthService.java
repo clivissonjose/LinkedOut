@@ -1,6 +1,6 @@
 package com.VA2ES.backend.services;
 
-import com.VA2ES.backend.comunicacao.dto.RegisterDTO;
+import com.VA2ES.backend.dto.RegisterDTO;
 import com.VA2ES.backend.models.User;
 import com.VA2ES.backend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;

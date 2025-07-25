@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.VA2ES.backend.BackendApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.323 s -- in com.VA2ES.backend.BackendApplicationTests
