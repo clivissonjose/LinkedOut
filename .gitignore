@@ -1,0 +1,61 @@
+# ========== BACKEND - SPRING BOOT ==========
+
+# Diretórios de build do Maven/Gradle
+/target/
+/build/
+
+# Arquivos gerados
+*.log
+*.class
+*.jar
+*.war
+*.ear
+
+# IDEs
+/.idea/
+/*.iml
+*.ipr
+*.iws
+/.vscode/
+/nbproject/private/
+/.nb-gradle/
+/.metadata/
+/.project
+.classpath
+.factorypath
+.settings
+.springBeans
+.sts4-cache
+
+# Wrapper Maven
+!.mvn/wrapper/maven-wrapper.jar
+
+# Evitar ignorar configs essenciais
+!back/src/main/resources/application.yml
+
+# ========== FRONTEND - ANGULAR ==========
+
+# Node.js dependencies
+/node_modules/
+
+# Build output
+/dist/
+/out-tsc/
+/coverage/
+/.angular/cache/
+
+# Angular environment files (se quiser ignorar configs locais, descomente)
+/src/environments/environment.local.ts
+
+# IDEs específicas (já ignoradas acima, mas caso frontend esteja separado)
+.vscode/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# System files
+.DS_Store
+Thumbs.db
+
