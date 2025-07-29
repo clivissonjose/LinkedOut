@@ -1,7 +1,7 @@
-package com.VA2ES.backend.comunicacao.controllers;
+package com.VA2ES.backend.controllers;
 
-import com.VA2ES.backend.comunicacao.dto.StudentRequestDTO;
-import com.VA2ES.backend.comunicacao.dto.StudentResponseDTO;
+import com.VA2ES.backend.dto.StudentRequestDTO;
+import com.VA2ES.backend.dto.StudentResponseDTO;
 import com.VA2ES.backend.services.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

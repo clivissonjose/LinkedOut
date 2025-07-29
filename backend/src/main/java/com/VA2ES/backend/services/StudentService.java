@@ -1,7 +1,7 @@
 package com.VA2ES.backend.services;
 
-import com.VA2ES.backend.comunicacao.dto.StudentRequestDTO;
-import com.VA2ES.backend.comunicacao.dto.StudentResponseDTO;
+import com.VA2ES.backend.dto.StudentRequestDTO;
+import com.VA2ES.backend.dto.StudentResponseDTO;
 import com.VA2ES.backend.models.Student;
 import com.VA2ES.backend.models.User;
 import com.VA2ES.backend.repositories.StudentRepository;
