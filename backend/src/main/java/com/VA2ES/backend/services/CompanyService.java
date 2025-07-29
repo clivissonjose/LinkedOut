@@ -7,6 +7,8 @@ import com.VA2ES.backend.models.Student;
 import com.VA2ES.backend.repositories.CompanyRepository;
 import com.VA2ES.backend.repositories.StudentRepository;
 
+import jakarta.persistence.EntityNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -69,10 +71,19 @@ public class CompanyService {
     }
 
 
+    // Buscar por nome do curso e intervalo de periodos
     public List<StudentPublicDTO> filtroEstudantesPorAreaEPeriodo(String course, int periodMin, int periodMax){
 
+        if (course == null || course.trim().isEmpty()) {
+            throw new IllegalArgumentException("O curso deve ser informado.");
+        }
+     
        List<Student> estudantes = this.estudanteRepository.findByCourseAndCurrentPeriodBetween(course, periodMin, periodMax);
-       
+        
+       if (estudantes.isEmpty()) {
+          throw new EntityNotFoundException("Nenhum estudante encontrado para os critérios informados.");
+       }
+
        return estudantes.stream()
             .map(estudante -> new StudentPublicDTO(
                     estudante.getFullName(),

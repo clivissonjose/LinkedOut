@@ -2,8 +2,10 @@ package com.VA2ES.backend.controllers;
 
 import com.VA2ES.backend.dto.StudentPublicDTO;
 import com.VA2ES.backend.models.Company;
-import com.VA2ES.backend.models.Student;
 import com.VA2ES.backend.services.CompanyService;
+
+import jakarta.persistence.EntityNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,10 +53,17 @@ public class CompanyController {
 
     @GetMapping("students/filter")
     public ResponseEntity<?> filtroEstudantes(@RequestParam String course, @RequestParam int periodMin, @RequestParam int periodMax){
-       
-        List<StudentPublicDTO> estudantes = empresaService.filtroEstudantesPorAreaEPeriodo(course, periodMin, periodMax);
+       try{
 
-        return ResponseEntity.ok(estudantes);
+           List<StudentPublicDTO> estudantes = empresaService.filtroEstudantesPorAreaEPeriodo(course, periodMin, periodMax);
+    
+           return ResponseEntity.ok(estudantes);
+       }catch(IllegalArgumentException e){
+           return ResponseEntity.badRequest().body(e.getMessage());
+       } catch (EntityNotFoundException e) {
+           return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+       }
+
         
     }
 }
