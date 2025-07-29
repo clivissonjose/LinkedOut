@@ -1,22 +1,29 @@
 package com.VA2ES.backend.services;
 
+import com.VA2ES.backend.dto.StudentResponseDTO;
 import com.VA2ES.backend.models.Company;
+import com.VA2ES.backend.models.Student;
 import com.VA2ES.backend.repositories.CompanyRepository;
+import com.VA2ES.backend.repositories.StudentRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CompanyService {
 
     private final CompanyRepository empresaRepository;
+    private final StudentRepository estudanteRepository;
 
-    @Autowired
-    public CompanyService(CompanyRepository empresaRepository) {
+    
+    public CompanyService(CompanyRepository empresaRepository, StudentRepository estudanteRepository) {
         this.empresaRepository = empresaRepository;
+        this.estudanteRepository = estudanteRepository;
     }
 
     public Company create(Company empresa) {
@@ -61,5 +68,13 @@ public class CompanyService {
     }
 
 
+    public List<Student> filtroEstudantesPorAreaEPeriodo(String course, int periodMin, int periodMax){
+
+       List<Student> estudantes = this.estudanteRepository.findByCourseAndCurrentPeriodBetween(course, periodMin, periodMax);
+       
+       return estudantes;
+    }
+
+  
 
 }

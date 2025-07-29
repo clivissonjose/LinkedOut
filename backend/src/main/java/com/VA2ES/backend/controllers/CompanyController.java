@@ -1,6 +1,7 @@
 package com.VA2ES.backend.controllers;
 
 import com.VA2ES.backend.models.Company;
+import com.VA2ES.backend.models.Student;
 import com.VA2ES.backend.services.CompanyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,7 +15,7 @@ public class CompanyController {
 
     private final CompanyService empresaService;
 
-    @Autowired
+   
     public CompanyController(CompanyService empresaService) {
         this.empresaService = empresaService;
     }
@@ -44,6 +45,15 @@ public class CompanyController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletar(@PathVariable Long id) {
         empresaService.deleteById(id);
+    }
+
+    @GetMapping("students/filter")
+    public void filtroEstudantes(@RequestParam String course, @RequestParam int periodMin, @RequestParam int periodMax){
+       
+        List<Student> estudantes = empresaService.filtroEstudantesPorAreaEPeriodo(course, periodMin, periodMax);
+
+        System.out.println(estudantes);
+        
     }
 }
 

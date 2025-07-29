@@ -8,7 +8,7 @@ public class StudentRequestDTO {
     public String cpf;
     public String phone;
     public String course;
-    public String currentPeriod;
+    public Integer currentPeriod;
     public String academicSummary;
     public Long userId;
 }
