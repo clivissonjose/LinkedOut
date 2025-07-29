@@ -1,5 +1,6 @@
 package com.VA2ES.backend.services;
 
+import com.VA2ES.backend.dto.StudentPublicDTO;
 import com.VA2ES.backend.dto.StudentResponseDTO;
 import com.VA2ES.backend.models.Company;
 import com.VA2ES.backend.models.Student;
@@ -68,11 +69,20 @@ public class CompanyService {
     }
 
 
-    public List<Student> filtroEstudantesPorAreaEPeriodo(String course, int periodMin, int periodMax){
+    public List<StudentPublicDTO> filtroEstudantesPorAreaEPeriodo(String course, int periodMin, int periodMax){
 
        List<Student> estudantes = this.estudanteRepository.findByCourseAndCurrentPeriodBetween(course, periodMin, periodMax);
        
-       return estudantes;
+       return estudantes.stream()
+            .map(estudante -> new StudentPublicDTO(
+                    estudante.getFullName(),
+                    estudante.getCurrentPeriod(),
+                    estudante.getPhone(),
+                    estudante.getCourse(),
+                    estudante.getAcademicSummary()
+            ))
+            .collect(Collectors.toList());
+      
     }
 
   

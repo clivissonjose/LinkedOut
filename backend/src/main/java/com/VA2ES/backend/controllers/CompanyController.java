@@ -1,10 +1,12 @@
 package com.VA2ES.backend.controllers;
 
+import com.VA2ES.backend.dto.StudentPublicDTO;
 import com.VA2ES.backend.models.Company;
 import com.VA2ES.backend.models.Student;
 import com.VA2ES.backend.services.CompanyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,11 +50,11 @@ public class CompanyController {
     }
 
     @GetMapping("students/filter")
-    public void filtroEstudantes(@RequestParam String course, @RequestParam int periodMin, @RequestParam int periodMax){
+    public ResponseEntity<?> filtroEstudantes(@RequestParam String course, @RequestParam int periodMin, @RequestParam int periodMax){
        
-        List<Student> estudantes = empresaService.filtroEstudantesPorAreaEPeriodo(course, periodMin, periodMax);
+        List<StudentPublicDTO> estudantes = empresaService.filtroEstudantesPorAreaEPeriodo(course, periodMin, periodMax);
 
-        System.out.println(estudantes);
+        return ResponseEntity.ok(estudantes);
         
     }
 }
