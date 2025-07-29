@@ -1,6 +1,6 @@
-package com.VA2ES.backend.comunicacao.controllers;
+package com.VA2ES.backend.controllers;
 
-import com.VA2ES.backend.comunicacao.dto.UpdateNameDTO;
+import com.VA2ES.backend.dto.UpdateNameDTO;
 import com.VA2ES.backend.models.User;
 import com.VA2ES.backend.services.UserService;
 import jakarta.validation.Valid;

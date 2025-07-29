@@ -1,8 +1,8 @@
-package com.VA2ES.backend.comunicacao.controllers;
+package com.VA2ES.backend.controllers;
 
-import com.VA2ES.backend.comunicacao.dto.AuthDTO;
-import com.VA2ES.backend.comunicacao.dto.LoginResponseDTO;
-import com.VA2ES.backend.comunicacao.dto.RegisterDTO;
+import com.VA2ES.backend.dto.AuthDTO;
+import com.VA2ES.backend.dto.LoginResponseDTO;
+import com.VA2ES.backend.dto.RegisterDTO;
 import com.VA2ES.backend.models.User;
 import com.VA2ES.backend.repositories.UserRepository;
 import com.VA2ES.backend.security.TokenService;

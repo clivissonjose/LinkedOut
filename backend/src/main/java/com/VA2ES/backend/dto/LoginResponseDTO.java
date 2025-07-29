@@ -1,4 +1,4 @@
-package com.VA2ES.backend.comunicacao.dto;
+package com.VA2ES.backend.dto;
 
 public record LoginResponseDTO(String token) {
 }

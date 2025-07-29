@@ -1,4 +1,4 @@
-package com.VA2ES.backend.comunicacao.dto;
+package com.VA2ES.backend.dto;
 
 import com.VA2ES.backend.models.User;
 

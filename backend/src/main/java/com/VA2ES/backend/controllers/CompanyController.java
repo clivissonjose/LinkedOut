@@ -1,4 +1,4 @@
-package com.VA2ES.backend.comunicacao.controllers;
+package com.VA2ES.backend.controllers;
 
 import com.VA2ES.backend.models.Company;
 import com.VA2ES.backend.services.CompanyService;
