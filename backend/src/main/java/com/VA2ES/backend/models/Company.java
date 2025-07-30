@@ -36,6 +36,15 @@ public class Company {
     
     public Company() {}
 
+    public Company(Long id, String nomeDaEmpresa, String cnpj, String telefone, String areaDeAtuacao, User representanteDaEmpresa) {
+        this.id = id;
+        this.nomeDaEmpresa = nomeDaEmpresa;
+        this.cnpj = cnpj;
+        this.telefone = telefone;
+        this.areaDeAtuacao = areaDeAtuacao;
+        this.representanteDaEmpresa = representanteDaEmpresa;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
