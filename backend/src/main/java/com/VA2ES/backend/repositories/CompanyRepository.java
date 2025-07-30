@@ -11,7 +11,5 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
     Optional<Company> findByCnpj(String cnpj);
     Optional<Company> findById(Long id);
     List<Company> findByRepresentanteDaEmpresa_Id(Long representanteId);
-
-
+    List<Company> findByNomeDaEmpresaContainingIgnoreCaseOrAreaDeAtuacaoContainingIgnoreCase(String nome, String area);
 }
-
