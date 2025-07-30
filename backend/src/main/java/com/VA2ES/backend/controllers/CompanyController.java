@@ -34,6 +34,14 @@ public class CompanyController {
         return ResponseEntity.ok(empresaService.findAll());
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<CompanyResponseDTO>> buscarPorNomeOuArea(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) String area) {
+        List<CompanyResponseDTO> empresas = empresaService.buscarPorNomeOuArea(nome, area);
+        return ResponseEntity.ok(empresas);
+    }
+
     @GetMapping("/search/{id}")
     public ResponseEntity<CompanyResponseDTO> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(empresaService.findById(id));
