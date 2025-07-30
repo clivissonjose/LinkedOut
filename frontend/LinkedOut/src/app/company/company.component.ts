@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders, HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
+import { FormsModule } from '@angular/forms';
 
 interface Usuario {
   id: number;
@@ -21,25 +22,29 @@ interface Empresa {
 @Component({
   selector: 'app-company',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, HttpClientModule],
+  imports: [CommonModule, ReactiveFormsModule, HttpClientModule, FormsModule],
   template: `
     <section>
       <h2>Empresas</h2>
 
+      <div style="margin: 10px 0;">
+        <input type="text" [(ngModel)]="filtroNome" placeholder="Buscar por nome" />
+        <input type="text" [(ngModel)]="filtroArea" placeholder="Buscar por área de atuação" />
+      </div>
+
       <button (click)="mostrarFormulario = true" *ngIf="!mostrarFormulario">Nova Empresa</button>
 
-      <ul *ngIf="empresas.length > 0">
-        <li *ngFor="let empresa of empresas">
+      <ul *ngIf="empresasFiltradas.length > 0">
+        <li *ngFor="let empresa of empresasFiltradas">
           <strong>{{ empresa.nomeDaEmpresa }}</strong> - {{ empresa.cnpj }} -
           Representante: {{ empresa.representanteDaEmpresa.nome || empresa.representanteDaEmpresa.id }}
 
-          <!-- Botões Editar e Excluir -->
           <button (click)="editarEmpresa(empresa)">Editar</button>
           <button (click)="excluirEmpresa(empresa.id)">Excluir</button>
         </li>
       </ul>
 
-      <p *ngIf="empresas.length === 0">Nenhuma empresa cadastrada.</p>
+      <p *ngIf="empresasFiltradas.length === 0">Nenhuma empresa encontrada com esses filtros.</p>
 
       <section *ngIf="mostrarFormulario" style="margin-top: 20px;">
         <h3>{{ empresaEditando ? 'Editar Empresa' : 'Cadastrar Empresa' }}</h3>
@@ -73,7 +78,10 @@ export class CompanyComponent implements OnInit {
   usuarios: Usuario[] = [];
   empresas: Empresa[] = [];
   mostrarFormulario = false;
-  empresaEditando: Empresa | null = null; // para controle de edição
+  empresaEditando: Empresa | null = null;
+
+  filtroNome = '';
+  filtroArea = '';
 
   formEmpresa: FormGroup = this.fb.group({
     nomeDaEmpresa: ['', Validators.required],
@@ -91,6 +99,14 @@ export class CompanyComponent implements OnInit {
   private getHeaders() {
     const token = this.authService.getToken();
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  }
+
+  get empresasFiltradas(): Empresa[] {
+    return this.empresas.filter(empresa => {
+      const nomeOk = empresa.nomeDaEmpresa.toLowerCase().includes(this.filtroNome.toLowerCase());
+      const areaOk = empresa.areaDeAtuacao.toLowerCase().includes(this.filtroArea.toLowerCase());
+      return nomeOk && areaOk;
+    });
   }
 
   buscarUsuarios() {
@@ -126,11 +142,9 @@ export class CompanyComponent implements OnInit {
 
     try {
       if (this.empresaEditando) {
-        // Edição - PUT para atualizar
         await this.http.put(`http://localhost:8080/company/update/${this.empresaEditando.id}`, empresaPayload, { headers: this.getHeaders() }).toPromise();
         alert('Empresa atualizada com sucesso!');
       } else {
-        // Criação - POST
         await this.http.post('http://localhost:8080/company/create', empresaPayload, { headers: this.getHeaders() }).toPromise();
         alert('Empresa cadastrada com sucesso!');
       }
@@ -155,7 +169,6 @@ export class CompanyComponent implements OnInit {
     this.empresaEditando = empresa;
     this.mostrarFormulario = true;
 
-    // Preenche o formulário com os dados da empresa a ser editada
     this.formEmpresa.setValue({
       nomeDaEmpresa: empresa.nomeDaEmpresa,
       cnpj: empresa.cnpj,
