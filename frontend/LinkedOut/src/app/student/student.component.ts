@@ -1,9 +1,9 @@
-// src/app/student/student.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders, HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
+import { FormsModule } from '@angular/forms';
 
 interface Estudante {
   id: number;
@@ -20,7 +20,7 @@ interface Estudante {
 @Component({
   selector: 'app-student',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, HttpClientModule],
+  imports: [CommonModule, ReactiveFormsModule, HttpClientModule, FormsModule],
   templateUrl: './student.component.html',
   styleUrls: ['./student.component.css']
 })
@@ -32,6 +32,10 @@ export class StudentComponent implements OnInit {
   estudantes: Estudante[] = [];
   mostrarFormulario = false;
   estudanteEditando: Estudante | null = null;
+
+  filtroCurso = '';
+  periodoMin: number | null = null;
+  periodoMax: number | null = null;
 
   formEstudante: FormGroup = this.fb.group({
     nomeCompleto: ['', Validators.required],
@@ -50,6 +54,16 @@ export class StudentComponent implements OnInit {
   private getHeaders() {
     const token = this.authService.getToken();
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  }
+
+  get estudantesFiltrados(): Estudante[] {
+    return this.estudantes.filter(estudante => {
+      const cursoOk = estudante.curso.toLowerCase().includes(this.filtroCurso.toLowerCase());
+      const periodo = estudante.periodoAtual;
+      const periodoMinOk = this.periodoMin === null || periodo >= this.periodoMin;
+      const periodoMaxOk = this.periodoMax === null || periodo <= this.periodoMax;
+      return cursoOk && periodoMinOk && periodoMaxOk;
+    });
   }
 
   carregarEstudantes() {
@@ -72,11 +86,9 @@ export class StudentComponent implements OnInit {
 
     try {
       if (this.estudanteEditando) {
-        // PUT - editar
         await this.http.put(`http://localhost:8080/student/update/${this.estudanteEditando.id}`, estudantePayload, { headers: this.getHeaders() }).toPromise();
         alert('Estudante atualizado com sucesso!');
       } else {
-        // POST - criar
         await this.http.post('http://localhost:8080/student/create', estudantePayload, { headers: this.getHeaders() }).toPromise();
         alert('Estudante cadastrado com sucesso!');
       }
