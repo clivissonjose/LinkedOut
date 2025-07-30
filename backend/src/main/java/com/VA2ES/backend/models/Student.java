@@ -16,7 +16,7 @@ public class Student {
     private String cpf;
     private String phone;
     private String course;
-    private String currentPeriod;
+    private int currentPeriod;
 
     @Column(length = 2000)
     private String academicSummary;
@@ -29,7 +29,7 @@ public class Student {
     public Student() {}
 
     // Construtor completo
-    public Student(Long id, String fullName, LocalDate birthDate, String cpf, String phone, String course, String currentPeriod, String academicSummary, User user) {
+    public Student(Long id, String fullName, LocalDate birthDate, String cpf, String phone, String course, int currentPeriod, String academicSummary, User user) {
         this.id = id;
         this.fullName = fullName;
         this.birthDate = birthDate;
@@ -90,11 +90,11 @@ public class Student {
         this.course = course;
     }
 
-    public String getCurrentPeriod() {
+    public int getCurrentPeriod() {
         return currentPeriod;
     }
 
-    public void setCurrentPeriod(String currentPeriod) {
+    public void setCurrentPeriod(int currentPeriod) {
         this.currentPeriod = currentPeriod;
     }
 

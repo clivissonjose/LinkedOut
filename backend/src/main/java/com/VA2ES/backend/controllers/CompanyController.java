@@ -1,9 +1,13 @@
 package com.VA2ES.backend.controllers;
 
-import com.VA2ES.backend.models.Company;
+import com.VA2ES.backend.dto.CompanyRequestDTO;
+import com.VA2ES.backend.dto.CompanyResponseDTO;
+import com.VA2ES.backend.dto.StudentPublicDTO;
 import com.VA2ES.backend.services.CompanyService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,36 +18,54 @@ public class CompanyController {
 
     private final CompanyService empresaService;
 
-    @Autowired
+   
     public CompanyController(CompanyService empresaService) {
         this.empresaService = empresaService;
     }
 
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public Company cadastrar(@RequestBody Company empresa) {
-        return empresaService.create(empresa);
+    public ResponseEntity<CompanyResponseDTO> cadastrar(@RequestBody CompanyRequestDTO empresa) {
+        return ResponseEntity.ok(empresaService.create(empresa));
     }
 
     @GetMapping("/list")
-    public List<Company> listar() {
-        return empresaService.findAll();
+    public ResponseEntity<List<CompanyResponseDTO>> listar() {
+        return ResponseEntity.ok(empresaService.findAll());
     }
 
     @GetMapping("/search/{id}")
-    public Company buscarPorId(@PathVariable Long id) {
-        return empresaService.findById(id);
+    public ResponseEntity<CompanyResponseDTO> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(empresaService.findById(id));
     }
 
     @PutMapping("/update/{id}")
-    public Company atualizar(@PathVariable Long id, @RequestBody Company dadosAtualizados) {
-        return empresaService.update(id, dadosAtualizados);
+    public ResponseEntity<CompanyResponseDTO> atualizar(@PathVariable Long id, @RequestBody CompanyRequestDTO dadosAtualizados) {
+        return ResponseEntity.ok(empresaService.update(id, dadosAtualizados));
     }
 
     @DeleteMapping("/delete/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletar(@PathVariable Long id) {
-        empresaService.deleteById(id);
+    public ResponseEntity<?> deletar(@PathVariable Long id) {
+       empresaService.deleteById(id);
+       return  ResponseEntity.ok().build();
+    }
+
+
+    @GetMapping("students/filter")
+    public ResponseEntity<?> filtroEstudantes(@RequestParam String course, @RequestParam int periodMin, @RequestParam int periodMax){
+       try{
+
+           List<StudentPublicDTO> estudantes = empresaService.filtroEstudantesPorAreaEPeriodo(course, periodMin, periodMax);
+    
+           return ResponseEntity.ok(estudantes);
+       }catch(IllegalArgumentException e){
+           return ResponseEntity.badRequest().body(e.getMessage());
+       } catch (EntityNotFoundException e) {
+           return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+       }
+
+        
     }
 }
 
