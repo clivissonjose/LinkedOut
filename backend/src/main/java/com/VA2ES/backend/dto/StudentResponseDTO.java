@@ -9,12 +9,12 @@ public class StudentResponseDTO {
     public String cpf;
     public String phone;
     public String course;
-    public String currentPeriod;
+    public Integer currentPeriod;
     public String academicSummary;
     public String userEmail;
 
     public StudentResponseDTO(Long id, String fullName, LocalDate birthDate, String cpf,
-                              String phone, String course, String currentPeriod,
+                              String phone, String course, int currentPeriod,
                               String academicSummary, String userEmail) {
         this.id = id;
         this.fullName = fullName;
