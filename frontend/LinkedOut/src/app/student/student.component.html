@@ -1,0 +1,33 @@
+<section>
+  <h2>Estudantes</h2>
+
+  <button (click)="mostrarFormulario = true" *ngIf="!mostrarFormulario">Novo Estudante</button>
+
+  <ul *ngIf="estudantes.length > 0">
+    <li *ngFor="let estudante of estudantes">
+      <strong>{{ estudante.nomeCompleto }}</strong> - {{ estudante.curso }} ({{ estudante.periodoAtual }}º período)
+      <button (click)="editarEstudante(estudante)">Editar</button>
+      <button (click)="excluirEstudante(estudante.id)">Excluir</button>
+    </li>
+  </ul>
+
+  <p *ngIf="estudantes.length === 0">Nenhum estudante cadastrado.</p>
+
+  <section *ngIf="mostrarFormulario">
+    <h3>{{ estudanteEditando ? 'Editar' : 'Cadastrar' }} Estudante</h3>
+    <form [formGroup]="formEstudante" (ngSubmit)="onSubmit()">
+      <input type="text" formControlName="nomeCompleto" placeholder="Nome Completo" />
+      <input type="date" formControlName="dataNascimento" />
+      <input type="text" formControlName="cpf" placeholder="CPF" />
+      <input type="text" formControlName="telefone" placeholder="Telefone" />
+      <input type="text" formControlName="curso" placeholder="Curso" />
+      <input type="number" formControlName="periodoAtual" placeholder="Período Atual" />
+      <textarea formControlName="resumoAcademico" placeholder="Resumo Acadêmico"></textarea>
+
+      <button type="submit" [disabled]="formEstudante.invalid">
+        {{ estudanteEditando ? 'Salvar' : 'Cadastrar' }}
+      </button>
+      <button type="button" (click)="cancelarCadastro()">Cancelar</button>
+    </form>
+  </section>
+</section>

@@ -1,6 +1,5 @@
-import { Component, inject } from '@angular/core';
-import { RouterModule, Router } from '@angular/router';
-import { AuthService } from './auth/auth.service';
+import { Component } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HeaderComponent } from "./header/header.component"
 
@@ -12,4 +11,7 @@ import { HeaderComponent } from "./header/header.component"
     <router-outlet></router-outlet>`
 })
 export class AppComponent {
+    title(title: any) {
+        throw new Error('Method not implemented.');
+    }
 }

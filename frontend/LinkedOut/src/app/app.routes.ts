@@ -5,6 +5,7 @@ import { HomeComponent } from './home/home.component';
 import { UnauthorizedComponent } from './auth/unauthorized/unauthorized.component';
 import { CompanyComponent } from './company/company.component';
 import { authGuard } from './auth/auth.guard';
+import {StudentComponent} from './student/student.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -13,5 +14,6 @@ export const routes: Routes = [
   { path: 'home', component: HomeComponent, canActivate: [authGuard] },
   { path: 'unauthorized', component: UnauthorizedComponent },
   { path: 'empresas', component: CompanyComponent },
-  { path: '**', redirectTo: 'login' }
+  { path: '**', redirectTo: 'login' },
+  {path: 'estudantes', component: StudentComponent}
 ];

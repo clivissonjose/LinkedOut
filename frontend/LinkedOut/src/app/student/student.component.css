@@ -1,0 +1,12 @@
+input, textarea, select {
+  display: block;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+button {
+  margin-right: 0.5rem;
+  margin-top: 1rem;
+}
