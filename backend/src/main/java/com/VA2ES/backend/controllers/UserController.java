@@ -35,4 +35,19 @@ public class UserController {
     public ResponseEntity<List<User>> listarTodos() {
         return ResponseEntity.ok(userService.listarTodos());
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal User user) {
+        if (user == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Usuário não autenticado"));
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "id", user.getId(),
+                "nome", user.getNome(),
+                "email", user.getEmail(),
+                "role", user.getRole().name()
+        ));
+    }
+
 }
