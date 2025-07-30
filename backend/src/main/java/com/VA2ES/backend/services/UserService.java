@@ -2,6 +2,9 @@ package com.VA2ES.backend.services;
 
 import com.VA2ES.backend.models.User;
 import com.VA2ES.backend.repositories.UserRepository;
+
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,5 +19,9 @@ public class UserService {
     public User updateName(User current, String newName) {
         current.setNome(newName);
         return userRepository.save(current);
+    }
+
+    public List<User> listarTodos() {
+        return userRepository.findAll();
     }
 }

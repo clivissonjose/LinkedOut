@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -27,5 +28,11 @@ public class UserController {
                 "message", "Nome atualizado com sucesso",
                 "novoNome", updatedUser.getNome()
         ));
+
+    }
+
+    @GetMapping
+    public ResponseEntity<List<User>> listarTodos() {
+        return ResponseEntity.ok(userService.listarTodos());
     }
 }
