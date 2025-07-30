@@ -11,6 +11,8 @@ import com.VA2ES.backend.repositories.CompanyRepository;
 import com.VA2ES.backend.repositories.StudentRepository;
 
 import com.VA2ES.backend.repositories.UserRepository;
+
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -123,7 +125,18 @@ public class CompanyService {
         return  toDTO(empresa);
     }
 
+    public List<CompanyResponseDTO> buscarPorNomeOuArea(String nome, String area) {
+        List<Company> empresas = empresaRepository
+            .findByNomeDaEmpresaContainingIgnoreCaseOrAreaDeAtuacaoContainingIgnoreCase(
+                nome != null ? nome : "",
+                area != null ? area : ""
+            );
 
+        return empresas.stream()
+            .map(this::toDTO)
+            .collect(Collectors.toList());
+    }
+    
     private CompanyResponseDTO toDTO(Company empresa) {
         return new CompanyResponseDTO(
                 empresa.getId(),
@@ -194,5 +207,6 @@ public class CompanyService {
     User user = (User) auth.getPrincipal();
     return user.getId();
 }
+
 
 }
