@@ -12,10 +12,11 @@ import { CommonModule } from '@angular/common';
   <nav>
     <a routerLink="/home" style="margin-right: 1rem; color:white; text-decoration:none;">Home</a>
     <a routerLink="/empresas" *ngIf="isAuthenticated()" style="margin-right: 1rem; color:white; text-decoration:none;">Empresas</a>
+    <a routerLink="/estudantes" *ngIf="isAuthenticated()" style="margin-right: 1rem; color:white; text-decoration:none;">Estudantes</a>
     <a routerLink="/login" style="margin-right: 1rem; color:white; text-decoration:none;">Login</a>
-    <a 
-      *ngIf="isAuthenticated()" 
-      (click)="logout()" 
+    <a
+      *ngIf="isAuthenticated()"
+      (click)="logout()"
       style="color:white; text-decoration:none; cursor:pointer;"
     >Logout</a>
   </nav>

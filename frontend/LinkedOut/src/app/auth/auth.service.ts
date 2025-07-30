@@ -79,4 +79,24 @@ export class AuthService {
   getToken(): string | null {
     return localStorage.getItem('token');
   }
+
+  // src/app/auth/auth.service.ts
+  getUserId(): number {
+    const token = this.getToken();
+    if (!token) return 0;
+
+    const payload = this.decodeToken(token);
+    return payload?.id ?? 0;
+  }
+
+  private decodeToken(token: string): any {
+    try {
+      const payload = token.split('.')[1];
+      const decoded = atob(payload);
+      return JSON.parse(decoded);
+    } catch (e) {
+      console.error('Erro ao decodificar token:', e);
+      return null;
+    }
+  }
 }

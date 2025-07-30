@@ -8,6 +8,8 @@ import com.VA2ES.backend.repositories.StudentRepository;
 import com.VA2ES.backend.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -58,6 +60,7 @@ public class StudentService {
     }
 
     public StudentResponseDTO findById(Long id) {
+//        checkPermission(id); caso achar necessario
         // find user and check if don´t exist
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Estudante não encontrado"));
@@ -65,6 +68,7 @@ public class StudentService {
     }
 
     public StudentResponseDTO update(Long id, StudentRequestDTO dto) {
+        checkPermission(id);
         // find user and check if don´t exist
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Estudante não encontrado"));
@@ -92,6 +96,7 @@ public class StudentService {
     }
 
     public void delete(Long id) {
+        checkPermission(id);
         // find user or check if don´t exist
         if (!studentRepository.existsById(id)) {
             throw new EntityNotFoundException("Estudante não encontrado");
@@ -99,6 +104,25 @@ public class StudentService {
         //delete in data base
         studentRepository.deleteById(id);
         // do not return cotent
+    }
+
+    private void checkPermission(Long studentId) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new AccessDeniedException("Usuário não autenticado.");
+        }
+
+        var isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (isAdmin) return;
+
+        Long userId = ((User) auth.getPrincipal()).getId();
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new EntityNotFoundException("Estudante não encontrado"));
+        if (!student.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("Acesso negado: você só pode acessar o seu próprio cadastro.");
+        }
     }
 
     // convert objet to dto to request
