@@ -5,6 +5,7 @@ import com.VA2ES.backend.dto.CompanyResponseDTO;
 import com.VA2ES.backend.dto.StudentPublicDTO;
 import com.VA2ES.backend.services.CompanyService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class CompanyController {
 
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<CompanyResponseDTO> cadastrar(@RequestBody CompanyRequestDTO empresa) {
+    public ResponseEntity<CompanyResponseDTO> cadastrar( @Valid @RequestBody CompanyRequestDTO empresa) {
         return ResponseEntity.ok(empresaService.create(empresa));
     }
 
@@ -48,7 +49,7 @@ public class CompanyController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<CompanyResponseDTO> atualizar(@PathVariable Long id, @RequestBody CompanyRequestDTO dadosAtualizados) {
+    public ResponseEntity<CompanyResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody CompanyRequestDTO dadosAtualizados) {
         return ResponseEntity.ok(empresaService.update(id, dadosAtualizados));
     }
 
