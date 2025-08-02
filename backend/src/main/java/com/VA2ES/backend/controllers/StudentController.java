@@ -3,6 +3,7 @@ package com.VA2ES.backend.controllers;
 import com.VA2ES.backend.dto.StudentRequestDTO;
 import com.VA2ES.backend.dto.StudentResponseDTO;
 import com.VA2ES.backend.services.StudentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ public class StudentController {
     private StudentService studentService;
 
     @PostMapping
-    public ResponseEntity<StudentResponseDTO> create(@RequestBody StudentRequestDTO dto) {
+    public ResponseEntity<StudentResponseDTO> create(@Valid @RequestBody StudentRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(studentService.create(dto));
     }
 
@@ -33,7 +34,7 @@ public class StudentController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<StudentResponseDTO> update(@PathVariable Long id, @RequestBody StudentRequestDTO dto) {
+    public ResponseEntity<StudentResponseDTO> update(@PathVariable Long id, @Valid @RequestBody StudentRequestDTO dto) {
         return ResponseEntity.ok(studentService.update(id, dto));
     }
 
