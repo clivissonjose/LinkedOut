@@ -6,6 +6,7 @@ import com.VA2ES.backend.dto.VacancyUpdateDTO;
 import com.VA2ES.backend.models.Company;
 import com.VA2ES.backend.models.User;
 import com.VA2ES.backend.models.Vacancy;
+import com.VA2ES.backend.models.enums.VacancyType;
 import com.VA2ES.backend.repositories.CompanyRepository;
 import com.VA2ES.backend.repositories.VacancyRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -112,6 +113,36 @@ public class VacancyService {
                     vaga.getDataPublicacao(),
                     vaga.getDataLimite()
             );
+        }
+
+        // Pega todas as vagas de acordo  com a area e a tipo da vaga
+        public List<VacancyResponseDTO> filterByAreaAndTipo(String area, VacancyType vacancyType){
+             try{
+             
+                List<Vacancy> filteredVacancies = vacancyRepository.findByAreaAndTipo(area, vacancyType);
+                
+                return filteredVacancies.stream()
+                    .map(this::toDTO)
+                    .collect(Collectors.toList());
+
+             }catch(Exception e){
+                 throw new RuntimeException("Erro ao buscar area por vaga ou tipo");
+             }
+        }
+
+        // Pega as vagas que vão se encerrar durante um periodo
+        public List<VacancyResponseDTO> filterByAreaAndTipoAndPeriodo(String area, VacancyType vacancyType, LocalDate inicio, LocalDate fim){
+            
+            try{
+            
+                List<Vacancy> filteredVacancies = vacancyRepository.findByAreaAndTipoAndDataLimiteBetween(area, vacancyType, inicio, fim);
+                
+                return filteredVacancies.stream()
+                    .map(this::toDTO)
+                    .collect(Collectors.toList());
+            }catch(Exception e ){
+                throw new RuntimeException("Erro ao buscar vagas com datas.");
+            }
         }
 
 }

@@ -4,12 +4,14 @@ package com.VA2ES.backend.controllers;
 import com.VA2ES.backend.dto.VacancyRequestDTO;
 import com.VA2ES.backend.dto.VacancyResponseDTO;
 import com.VA2ES.backend.dto.VacancyUpdateDTO;
+import com.VA2ES.backend.models.enums.VacancyType;
 import com.VA2ES.backend.services.VacancyService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -49,4 +51,16 @@ public class VacancyController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/filter")
+    public ResponseEntity<?> filterVacancies(@RequestParam String area, @RequestParam VacancyType vacancyType,
+         @RequestParam(required = false) LocalDate inicio, @RequestParam(required = false) LocalDate fim){
+
+            System.out.println(fim);
+        if(inicio != null && fim != null){
+            return ResponseEntity.ok(vacancyService.filterByAreaAndTipoAndPeriodo(area, vacancyType, inicio, fim));
+        }
+        
+        return ResponseEntity.ok(vacancyService.filterByAreaAndTipo(area, vacancyType));
+
+    }
 }
