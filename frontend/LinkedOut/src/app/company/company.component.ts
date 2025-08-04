@@ -136,9 +136,7 @@ export class CompanyComponent implements OnInit {
       cnpj: formValue.cnpj,
       telefone: formValue.telefone,
       areaDeAtuacao: formValue.areaDeAtuacao,
-      representanteDaEmpresa: {
-        id: formValue.representanteId
-      }
+      representanteDaEmpresaId: formValue.representanteId
     };
 
     try {

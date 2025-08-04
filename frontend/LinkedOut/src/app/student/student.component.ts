@@ -80,8 +80,14 @@ export class StudentComponent implements OnInit {
     const formValue = this.formEstudante.value;
 
     const estudantePayload = {
-      ...formValue,
-      usuarioId: this.authService.getUserId()
+      fullName: formValue.nomeCompleto,
+      birthDate: formValue.dataNascimento,
+      cpf: formValue.cpf,
+      phone: formValue.telefone,
+      course: formValue.curso,
+      currentPeriod: formValue.periodoAtual,
+      academicSummary: formValue.resumoAcademico,
+      userId: this.authService.getUserId()
     };
 
     try {
@@ -89,7 +95,7 @@ export class StudentComponent implements OnInit {
         await this.http.put(`http://localhost:8080/student/update/${this.estudanteEditando.id}`, estudantePayload, { headers: this.getHeaders() }).toPromise();
         alert('Estudante atualizado com sucesso!');
       } else {
-        await this.http.post('http://localhost:8080/student/create', estudantePayload, { headers: this.getHeaders() }).toPromise();
+        await this.http.post('http://localhost:8080/students', estudantePayload, { headers: this.getHeaders() }).toPromise();
         alert('Estudante cadastrado com sucesso!');
       }
 
