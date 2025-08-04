@@ -22,6 +22,7 @@ interface Empresa {
 @Component({
   selector: 'app-company',
   standalone: true,
+  styleUrls: ['./company.component.css'],
   imports: [CommonModule, ReactiveFormsModule, HttpClientModule, FormsModule],
   template: `
     <section>
