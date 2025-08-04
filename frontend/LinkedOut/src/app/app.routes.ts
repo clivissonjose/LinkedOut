@@ -6,6 +6,7 @@ import { UnauthorizedComponent } from './auth/unauthorized/unauthorized.componen
 import { CompanyComponent } from './company/company.component';
 import { authGuard } from './auth/auth.guard';
 import {StudentComponent} from './student/student.component';
+import {VacancyFormComponent} from './vacancy/vacancy-form.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -14,7 +15,8 @@ export const routes: Routes = [
   { path: 'home', component: HomeComponent, canActivate: [authGuard] },
   { path: 'unauthorized', component: UnauthorizedComponent },
   { path: 'empresas', component: CompanyComponent },
-    {path: 'estudantes', component: StudentComponent},
+  {path: 'estudantes', component: StudentComponent},
+  { path: 'vaga/publicar', component: VacancyFormComponent, canActivate: [authGuard] },
   { path: '**', redirectTo: 'login' }
 
 ];
