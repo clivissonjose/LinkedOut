@@ -1,0 +1,25 @@
+<section>
+  <div class="vacancy-list">
+    <h2>Vagas Disponíveis</h2>
+
+    <div class="filtros">
+      <input type="text" placeholder="Filtrar por título" [(ngModel)]="filtroCurso">
+      <input type="text" placeholder="Filtrar por localização" [(ngModel)]="filtroLocalizacao">
+      <input type="text" placeholder="Filtrar por área" [(ngModel)]="filtroArea">
+    </div>
+
+    <div *ngIf="vagasFiltradas.length === 0">
+      Nenhuma vaga disponível no momento.
+    </div>
+
+    <div *ngFor="let vacancy of vagasFiltradas" class="vacancy-card">
+      <h3>{{ vacancy.titulo }}</h3>
+      <p><strong>Área:</strong> {{ vacancy.area }}</p>
+      <p><strong>Descrição:</strong> {{ vacancy.descricao }}</p>
+      <p><strong>Requisitos:</strong> {{ vacancy.requisitos }}</p>
+      <p><strong>Benefícios:</strong> {{ vacancy.beneficios }}</p>
+      <p><strong>Tipo:</strong> {{ vacancy.tipo }}</p>
+      <p><strong>Data de Término:</strong> {{ vacancy.dataTermino | date }}</p>
+    </div>
+  </div>
+</section>

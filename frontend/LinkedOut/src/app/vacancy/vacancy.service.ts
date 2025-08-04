@@ -26,4 +26,8 @@ export class VacancyService {
 
     return this.http.post(`${this.API}/create`, vacancy, { headers });
   }
+
+  getAllVacancies(): Observable<VacancyRequest[]> {
+  return this.http.get<VacancyRequest[]>(`${this.API}/list`);
+}
 }
