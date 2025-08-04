@@ -30,10 +30,13 @@
       <input type="number" formControlName="periodoAtual" placeholder="Período Atual" />
       <textarea formControlName="resumoAcademico" placeholder="Resumo Acadêmico"></textarea>
 
-      <button type="submit" [disabled]="formEstudante.invalid">
-        {{ estudanteEditando ? 'Salvar' : 'Cadastrar' }}
-      </button>
-      <button type="button" (click)="cancelarCadastro()">Cancelar</button>
+  <div class="botoes-formulario">
+    <button type="submit" [disabled]="formEstudante.invalid">
+      {{ estudanteEditando ? 'Salvar' : 'Cadastrar' }}
+    </button>
+    <button type="button" (click)="cancelarCadastro()">Cancelar</button>
+  </div>
+
     </form>
   </section>
 </section>
