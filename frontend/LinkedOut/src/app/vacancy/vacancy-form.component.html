@@ -1,0 +1,54 @@
+<section>
+  <h2>Nova Vaga</h2>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <input type="text" formControlName="titulo" placeholder="Título da Vaga" required />
+    <textarea formControlName="descricao" placeholder="Descrição" required></textarea>
+    <textarea formControlName="requisitos" placeholder="Requisitos (separe por vírgulas)" required></textarea>
+    <input type="text" formControlName="area" placeholder="Área de Atuação" required />
+    <input type="text" formControlName="beneficios" placeholder="Benefícios (opcional)" />
+
+    <label>Tipo:</label>
+    <select formControlName="tipo" required>
+      <option value="" disabled selected>Selecione</option>
+      <option value="ESTAGIO">Estágio</option>
+      <option value="TRAINEE">Trainee</option>
+      <option value="EMPREGO">Emprego</option>
+    </select>
+
+    <label>Data Limite para Candidatura:</label>
+    <input type="date" formControlName="dataTermino" required />
+
+    <button type="submit" [disabled]="form.invalid">Publicar</button>
+  </form>
+
+  <div *ngIf="enviado">✅ Vaga publicada com sucesso!</div>
+  <div *ngIf="erro">❌ Ocorreu um erro ao publicar a vaga.</div>
+</section>
+<section>
+  <h2>Nova Vaga</h2>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <input type="text" formControlName="titulo" placeholder="Título da Vaga" required />
+    <textarea formControlName="descricao" placeholder="Descrição" required></textarea>
+    <textarea formControlName="requisitos" placeholder="Requisitos (separe por vírgulas)" required></textarea>
+    <input type="text" formControlName="area" placeholder="Área de Atuação" required />
+    <input type="text" formControlName="beneficios" placeholder="Benefícios (opcional)" />
+
+    <label>Tipo:</label>
+    <select formControlName="tipo" required>
+      <option value="" disabled selected>Selecione</option>
+      <option value="ESTAGIO">Estágio</option>
+      <option value="TRAINEE">Trainee</option>
+      <option value="EMPREGO">Emprego</option>
+    </select>
+
+    <label>Data Limite para Candidatura:</label>
+    <input type="date" formControlName="dataTermino" required />
+
+    <button type="submit" [disabled]="form.invalid">Publicar</button>
+  </form>
+
+  <div *ngIf="enviado">✅ Vaga publicada com sucesso!</div>
+  <div *ngIf="erro">❌ Ocorreu um erro ao publicar a vaga.</div>
+</section>
