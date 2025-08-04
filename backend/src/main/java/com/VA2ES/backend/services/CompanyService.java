@@ -3,7 +3,7 @@ package com.VA2ES.backend.services;
 import com.VA2ES.backend.dto.CompanyRequestDTO;
 import com.VA2ES.backend.dto.CompanyResponseDTO;
 import com.VA2ES.backend.dto.StudentPublicDTO;
-import com.VA2ES.backend.dto.StudentResponseDTO;
+
 import com.VA2ES.backend.models.Company;
 import com.VA2ES.backend.models.Student;
 import com.VA2ES.backend.models.User;
@@ -12,10 +12,10 @@ import com.VA2ES.backend.repositories.StudentRepository;
 
 import com.VA2ES.backend.repositories.UserRepository;
 
-import jakarta.annotation.PostConstruct;
+
 import jakarta.persistence.EntityNotFoundException;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;

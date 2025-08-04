@@ -1,5 +1,7 @@
 package com.VA2ES.backend.dto;
 
+import java.time.LocalDate;
+
 import com.VA2ES.backend.models.enums.VacancyType;
 
 public class VacancyResponseDTO {
@@ -12,8 +14,12 @@ public class VacancyResponseDTO {
     public VacancyType tipo;
     public Long idDaEmpresa;
     public String nomeDaEmpresa;
+    public LocalDate dataPublicacao;
+    public LocalDate dataTermino;
 
-    public VacancyResponseDTO(Long id, String titulo, String descricao, String requisitos, String areaDeAtuacao, String beneficios, VacancyType tipo, Long idDaEmpresa, String nomeDaEmpresa) {
+    public VacancyResponseDTO(Long id, String titulo, String descricao, String requisitos, 
+    String areaDeAtuacao, String beneficios, VacancyType tipo, 
+    Long idDaEmpresa, String nomeDaEmpresa, LocalDate dataPublicacao, LocalDate dataTermino) {
         this.id = id;
         this.titulo = titulo;
         this.descricao = descricao;
@@ -23,5 +29,7 @@ public class VacancyResponseDTO {
         this.tipo = tipo;
         this.idDaEmpresa = idDaEmpresa;
         this.nomeDaEmpresa = nomeDaEmpresa;
+        this.dataPublicacao = dataPublicacao;
+        this.dataTermino = dataTermino;
     }
 }

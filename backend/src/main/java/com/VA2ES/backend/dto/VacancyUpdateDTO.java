@@ -1,5 +1,7 @@
 package com.VA2ES.backend.dto;
 
+import java.time.LocalDate;
+
 import com.VA2ES.backend.models.enums.VacancyType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -23,6 +25,9 @@ public class VacancyUpdateDTO {
 
     @NotNull(message = "O tipo da vaga é obrigatório.")
     private VacancyType tipo;
+
+    @NotNull(message = "Data de termino é obrigatório.")
+    private LocalDate dataTermino;
 
     public String getTitulo() {
         return titulo;
@@ -70,6 +75,14 @@ public class VacancyUpdateDTO {
 
     public void setTipo(VacancyType tipo) {
         this.tipo = tipo;
+    }
+
+    public LocalDate getDataTermino() {
+        return dataTermino;
+    }
+
+    public void setDataTermino(LocalDate dataTermino) {
+        this.dataTermino = dataTermino;
     }
 
 }

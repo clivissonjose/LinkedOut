@@ -1,5 +1,8 @@
 package com.VA2ES.backend.models;
 
+import java.time.LocalDate;
+import java.util.Date;
+
 import com.VA2ES.backend.models.enums.VacancyType;
 import jakarta.persistence.*;
 
@@ -25,6 +28,12 @@ public class Vacancy {
 
     @Column(length = 1000)
     private String beneficios;
+
+    @Column()
+    private LocalDate dataPublicacao;
+
+    @Column()
+    private LocalDate dataLimite;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -54,6 +63,22 @@ public class Vacancy {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public LocalDate getDataPublicacao() {
+        return dataPublicacao;
+    }
+
+    public void setDataPublicacao(LocalDate dataPublicacao) {
+        this.dataPublicacao = dataPublicacao;
+    }
+
+    public LocalDate getDataLimite() {
+        return dataLimite;
+    }
+
+    public void setDataLimite(LocalDate dataLimite) {
+        this.dataLimite = dataLimite;
     }
 
     public String getTitulo() {
