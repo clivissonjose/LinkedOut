@@ -90,6 +90,14 @@
 				<version>3.4.7</version>
 			</plugin>
 		</plugins>
+		<resources>
+        	<resource>
+            	<directory>src/main/resources</directory>
+            	<includes>
+                	<include>**/*.properties</include>
+            	</includes>
+        	</resource>
+    	</resources>
 	</build>
 
 		<profiles>
