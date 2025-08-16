@@ -4,7 +4,6 @@ import com.va2es.backend.dto.UpdateNameDTO;
 import com.va2es.backend.models.User;
 import com.va2es.backend.services.UserService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -16,19 +15,20 @@ import java.util.Map;
 @RequestMapping("/users")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PutMapping("/name")
-    public ResponseEntity<?> updateName(@RequestBody @Valid UpdateNameDTO dto, @AuthenticationPrincipal User current) {
-
+    public ResponseEntity<Map<String, String>> updateName(@RequestBody @Valid UpdateNameDTO dto, @AuthenticationPrincipal User current) {
         User updatedUser = userService.updateName(current, dto.newName());
 
         return ResponseEntity.ok(Map.of(
                 "message", "Nome atualizado com sucesso",
                 "novoNome", updatedUser.getNome()
         ));
-
     }
 
     @GetMapping
@@ -37,7 +37,7 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal User user) {
+    public ResponseEntity<Map<String, Object>> getCurrentUser(@AuthenticationPrincipal User user) {
         if (user == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Usuário não autenticado"));
         }
@@ -49,5 +49,4 @@ public class UserController {
                 "role", user.getRole().name()
         ));
     }
-
 }
