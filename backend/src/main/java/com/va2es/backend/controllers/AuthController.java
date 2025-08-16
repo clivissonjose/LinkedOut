@@ -4,7 +4,6 @@ import com.va2es.backend.dto.AuthDTO;
 import com.va2es.backend.dto.LoginResponseDTO;
 import com.va2es.backend.dto.RegisterDTO;
 import com.va2es.backend.models.User;
-import com.va2es.backend.repositories.UserRepository;
 import com.va2es.backend.security.TokenService;
 import com.va2es.backend.services.AuthService;
 
@@ -27,42 +26,31 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
-
     private final AuthService authService;
-
-    private UserRepository userRepository;
-
-    private TokenService tokenService;
+    private final TokenService tokenService;
 
     public AuthController(AuthenticationManager authenticationManager,
-        AuthService authService, UserRepository userRepository, TokenService tokenService) {
-            this.authenticationManager = authenticationManager;
-            this.authService = authService;
-            this.userRepository = userRepository;
-            this.tokenService = tokenService;
+                          AuthService authService, TokenService tokenService) {
+        this.authenticationManager = authenticationManager;
+        this.authService = authService;
+        this.tokenService = tokenService;
     }
 
     @PostMapping("/login")
-    public ResponseEntity  login(@RequestBody @Valid AuthDTO authDTO) {
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid AuthDTO authDTO) {
         var usernamePassword = new UsernamePasswordAuthenticationToken(
-            authDTO.getEmail(), authDTO.getPassword());
+                authDTO.getEmail(), authDTO.getPassword());
 
         var auth = this.authenticationManager.authenticate(usernamePassword);
 
         var token = tokenService.generateToken((User) auth.getPrincipal());
 
-        return ResponseEntity.ok( new LoginResponseDTO(token));
-
+        return ResponseEntity.ok(new LoginResponseDTO(token));
     }
 
     @PostMapping("/register")
-    public ResponseEntity register(@RequestBody @Valid RegisterDTO registerDto) {
-
-
+    public ResponseEntity<Map<String, Object>> register(@RequestBody @Valid RegisterDTO registerDto) {
         User newUser = this.authService.register(registerDto);
-
-
-       // return  ResponseEntity.ok("Usuário registrado com sucesso");
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -77,8 +65,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout() {
+    public ResponseEntity<Map<String, String>> logout() {
         return ResponseEntity.ok(Map.of("message", "Logout realizado com sucesso. O token deve ser removido no cliente."));
     }
-
 }
