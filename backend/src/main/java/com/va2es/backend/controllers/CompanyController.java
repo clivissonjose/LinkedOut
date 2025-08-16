@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/company")
@@ -18,14 +19,13 @@ public class CompanyController {
 
     private final CompanyService empresaService;
 
-   
     public CompanyController(CompanyService empresaService) {
         this.empresaService = empresaService;
     }
 
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<CompanyResponseDTO> cadastrar( @Valid @RequestBody CompanyRequestDTO empresa) {
+    public ResponseEntity<CompanyResponseDTO> cadastrar(@Valid @RequestBody CompanyRequestDTO empresa) {
         return ResponseEntity.ok(empresaService.create(empresa));
     }
 
@@ -54,26 +54,20 @@ public class CompanyController {
 
     @DeleteMapping("/delete/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<?> deletar(@PathVariable Long id) {
-       empresaService.deleteById(id);
-       return  ResponseEntity.ok().build();
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+        empresaService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
-
 
     @GetMapping("students/filter")
-    public ResponseEntity<?> filtroEstudantes(@RequestParam String course, @RequestParam int periodMin, @RequestParam int periodMax){
-       try{
-
-           List<StudentPublicDTO> estudantes = empresaService.filtroEstudantesPorAreaEPeriodo(course, periodMin, periodMax);
-    
-           return ResponseEntity.ok(estudantes);
-       }catch(IllegalArgumentException e){
-           return ResponseEntity.badRequest().body(e.getMessage());
-       } catch (EntityNotFoundException e) {
-           return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-       }
-
-        
+    public ResponseEntity<Object> filtroEstudantes(@RequestParam String course, @RequestParam int periodMin, @RequestParam int periodMax) {
+        try {
+            List<StudentPublicDTO> estudantes = empresaService.filtroEstudantesPorAreaEPeriodo(course, periodMin, periodMax);
+            return ResponseEntity.ok(estudantes);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        }
     }
 }
-
