@@ -7,7 +7,7 @@ public class StudentPublicDTO {
     public String course;
     public String academicSummary;
 
-        public StudentPublicDTO(String fullName, int currentPeriod, String phone, String course, String academicSummary) {
+    public StudentPublicDTO(String fullName, int currentPeriod, String phone, String course, String academicSummary) {
         this.fullName = fullName;
         this.currentPeriod = currentPeriod;
         this.phone = phone;
