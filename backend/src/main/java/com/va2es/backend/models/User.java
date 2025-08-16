@@ -1,6 +1,5 @@
 package com.va2es.backend.models;
 
-
 import com.va2es.backend.models.enums.UserRole;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -41,7 +40,7 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (this.role == UserRole.ADMIN) {
             return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"),
-             new SimpleGrantedAuthority("ROLE_USER"));
+                    new SimpleGrantedAuthority("ROLE_USER"));
         } else {
             return List.of(new SimpleGrantedAuthority("ROLE_USER"));
         }
@@ -54,9 +53,9 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        // Correção: Chama o getter para evitar duplicação de lógica.
+        return this.getEmail();
     }
-
 
     @Override
     public boolean isAccountNonExpired() {
@@ -77,7 +76,6 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
 
     public Long getId() {
         return id;
