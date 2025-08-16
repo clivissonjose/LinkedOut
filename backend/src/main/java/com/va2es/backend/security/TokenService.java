@@ -1,6 +1,7 @@
 package com.va2es.backend.security;
 
 import com.va2es.backend.models.User;
+import com.va2es.backend.security.exceptions.TokenGenerationException; // Importe a nova exceção
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
@@ -18,10 +19,11 @@ public class TokenService {
     @Value("${api.security.token.secret}")
     private String secret;
 
-    public String generateToken(User user){
-        try{
+    public String generateToken(User user) {
+        try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
-            String token = JWT.create()
+            // Correção: Retorna a expressão diretamente
+            return JWT.create()
                     .withIssuer("auth-api")
                     .withSubject(user.getEmail())
                     .withClaim("id", user.getId())
@@ -29,34 +31,28 @@ public class TokenService {
                     .withClaim("role", user.getRole().name())
                     .withExpiresAt(genExpirationDate())
                     .sign(algorithm);
-
-            return token;
-        }catch(JWTCreationException exception){
-            throw new RuntimeException("Error while generating token", exception);
+        } catch (JWTCreationException exception) {
+            // Correção: Lança uma exceção específica e descritiva
+            throw new TokenGenerationException("Erro ao gerar o token JWT.", exception);
         }
     }
 
-    public String validateToken(String token){
-
+    public String validateToken(String token) {
         try {
-
             Algorithm algorithm = Algorithm.HMAC256(secret);
-
             return JWT.require(algorithm)
                     .withIssuer("auth-api")
                     .build()
                     .verify(token)
                     .getSubject();
-
-        }catch (JWTVerificationException exception){
-
+        } catch (JWTVerificationException exception) {
+            // Retornar uma string vazia em caso de falha na validação é uma opção,
+            // mas lançar uma exceção específica de validação também seria uma boa prática.
             return "";
-
         }
-
     }
 
-    private Instant genExpirationDate(){
+    private Instant genExpirationDate() {
         return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
     }
 }
