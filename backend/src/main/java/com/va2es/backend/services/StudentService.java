@@ -18,10 +18,8 @@ import java.util.stream.Collectors;
 @Service
 public class StudentService {
 
-    @Autowired
     private StudentRepository studentRepository;
 
-    @Autowired
     private UserRepository userRepository;
 
     public StudentResponseDTO create(StudentRequestDTO dto) {
@@ -63,7 +61,7 @@ public class StudentService {
 //        checkPermission(id); caso achar necessario
         // find user and check if don´t exist
         Student student = studentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Estudante não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Estudante não foi encontrado"));
         return toDTO(student);
     }
 

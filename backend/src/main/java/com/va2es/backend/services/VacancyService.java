@@ -97,52 +97,37 @@ public class VacancyService {
         if (!idDoRepresentante.equals(userIdLogado)) {
             throw new AccessDeniedException("Acesso negado: apenas o representante da empresa pode executar esta ação.");
         }
-
     }
-        private VacancyResponseDTO toDTO(Vacancy vaga){
-            return new VacancyResponseDTO(
-                    vaga.getId(),
-                    vaga.getTitulo(),
-                    vaga.getDescricao(),
-                    vaga.getRequisitos(),
-                    vaga.getArea(),
-                    vaga.getBeneficios(),
-                    vaga.getTipo(),
-                    vaga.getCompany().getId(),
-                    vaga.getCompany().getNomeDaEmpresa(),
-                    vaga.getDataPublicacao(),
-                    vaga.getDataLimite()
-            );
-        }
 
-        // Pega todas as vagas de acordo  com a area e a tipo da vaga
-        public List<VacancyResponseDTO> filterByAreaAndTipo(String area, VacancyType vacancyType){
-             try{
-             
-                List<Vacancy> filteredVacancies = vacancyRepository.findByAreaAndTipo(area, vacancyType);
-                
-                return filteredVacancies.stream()
-                    .map(this::toDTO)
-                    .collect(Collectors.toList());
+    private VacancyResponseDTO toDTO(Vacancy vaga){
+        return new VacancyResponseDTO(
+                vaga.getId(),
+                vaga.getTitulo(),
+                vaga.getDescricao(),
+                vaga.getRequisitos(),
+                vaga.getArea(),
+                vaga.getBeneficios(),
+                vaga.getTipo(),
+                vaga.getCompany().getId(),
+                vaga.getCompany().getNomeDaEmpresa(),
+                vaga.getDataPublicacao(),
+                vaga.getDataLimite()
+        );
+    }
 
-             }catch(Exception e){
-                 throw new RuntimeException("Erro ao buscar area por vaga ou tipo");
-             }
-        }
+    // Pega todas as vagas de acordo com a area e a tipo da vaga
+    public List<VacancyResponseDTO> filterByAreaAndTipo(String area, VacancyType vacancyType){
+        List<Vacancy> filteredVacancies = vacancyRepository.findByAreaAndTipo(area, vacancyType);
+        return filteredVacancies.stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
 
-        // Pega as vagas que vão se encerrar durante um periodo
-        public List<VacancyResponseDTO> filterByAreaAndTipoAndPeriodo(String area, VacancyType vacancyType, LocalDate inicio, LocalDate fim){
-            
-            try{
-            
-                List<Vacancy> filteredVacancies = vacancyRepository.findByAreaAndTipoAndDataLimiteBetween(area, vacancyType, inicio, fim);
-                
-                return filteredVacancies.stream()
-                    .map(this::toDTO)
-                    .collect(Collectors.toList());
-            }catch(Exception e ){
-                throw new RuntimeException("Erro ao buscar vagas com datas.");
-            }
-        }
-
+    // Pega as vagas que vão se encerrar durante um periodo
+    public List<VacancyResponseDTO> filterByAreaAndTipoAndPeriodo(String area, VacancyType vacancyType, LocalDate inicio, LocalDate fim){
+        List<Vacancy> filteredVacancies = vacancyRepository.findByAreaAndTipoAndDataLimiteBetween(area, vacancyType, inicio, fim);
+        return filteredVacancies.stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
 }
