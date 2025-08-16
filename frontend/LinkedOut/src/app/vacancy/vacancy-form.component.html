@@ -1,54 +1,61 @@
 <section>
-  <h2>Nova Vaga</h2>
+  <div class="card-wrapper" aria-labelledby="nova-vaga-title">
+    <h2 id="nova-vaga-title">Nova Vaga</h2>
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()">
-    <input type="text" formControlName="titulo" placeholder="Título da Vaga" required />
-    <textarea formControlName="descricao" placeholder="Descrição" required></textarea>
-    <textarea formControlName="requisitos" placeholder="Requisitos (separe por vírgulas)" required></textarea>
-    <input type="text" formControlName="area" placeholder="Área de Atuação" required />
-    <input type="text" formControlName="beneficios" placeholder="Benefícios (opcional)" />
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <div class="two-col">
+        <div>
+          <label for="titulo">Título da Vaga</label>
+          <input id="titulo" type="text" formControlName="titulo" placeholder="Título da Vaga" required />
+        </div>
+        <div>
+          <label for="tipo">Tipo</label>
+          <select id="tipo" formControlName="tipo" required>
+            <option value="" disabled selected>Selecione</option>
+            <option value="ESTAGIO">Estágio</option>
+            <option value="TRAINEE">Trainee</option>
+            <option value="EMPREGO">Emprego</option>
+          </select>
+        </div>
+      </div>
 
-    <label>Tipo:</label>
-    <select formControlName="tipo" required>
-      <option value="" disabled selected>Selecione</option>
-      <option value="ESTAGIO">Estágio</option>
-      <option value="TRAINEE">Trainee</option>
-      <option value="EMPREGO">Emprego</option>
-    </select>
+      <div>
+        <label for="descricao">Descrição</label>
+        <textarea id="descricao" formControlName="descricao" placeholder="Descrição" required></textarea>
+      </div>
 
-    <label>Data Limite para Candidatura:</label>
-    <input type="date" formControlName="dataTermino" required />
+      <div class="two-col">
+        <div>
+          <label for="requisitos">Requisitos</label>
+          <textarea id="requisitos" formControlName="requisitos" placeholder="Requisitos (separe por vírgulas)" required></textarea>
+        </div>
+        <div>
+          <label for="area">Área de Atuação</label>
+          <input id="area" type="text" formControlName="area" placeholder="Área de Atuação" required />
+        </div>
+      </div>
 
-    <button type="submit" [disabled]="form.invalid">Publicar</button>
-  </form>
+      <div class="two-col">
+        <div>
+          <label for="beneficios">Benefícios</label>
+          <input id="beneficios" type="text" formControlName="beneficios" placeholder="Benefícios (opcional)" />
+        </div>
+        <div>
+          <label for="dataTermino">Data Limite para Candidatura</label>
+          <input id="dataTermino" type="date" formControlName="dataTermino" required />
+        </div>
+      </div>
 
-  <div *ngIf="enviado">✅ Vaga publicada com sucesso!</div>
-  <div *ngIf="erro">❌ Ocorreu um erro ao publicar a vaga.</div>
-</section>
-<section>
-  <h2>Nova Vaga</h2>
+      <div class="actions">
+        <button type="submit" [disabled]="form.invalid">Publicar</button>
+      </div>
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()">
-    <input type="text" formControlName="titulo" placeholder="Título da Vaga" required />
-    <textarea formControlName="descricao" placeholder="Descrição" required></textarea>
-    <textarea formControlName="requisitos" placeholder="Requisitos (separe por vírgulas)" required></textarea>
-    <input type="text" formControlName="area" placeholder="Área de Atuação" required />
-    <input type="text" formControlName="beneficios" placeholder="Benefícios (opcional)" />
-
-    <label>Tipo:</label>
-    <select formControlName="tipo" required>
-      <option value="" disabled selected>Selecione</option>
-      <option value="ESTAGIO">Estágio</option>
-      <option value="TRAINEE">Trainee</option>
-      <option value="EMPREGO">Emprego</option>
-    </select>
-
-    <label>Data Limite para Candidatura:</label>
-    <input type="date" formControlName="dataTermino" required />
-
-    <button type="submit" [disabled]="form.invalid">Publicar</button>
-  </form>
-
-  <div *ngIf="enviado">✅ Vaga publicada com sucesso!</div>
-  <div *ngIf="erro">❌ Ocorreu um erro ao publicar a vaga.</div>
+      <div *ngIf="enviado" class="feedback success" role="status">
+        ✅ Vaga publicada com sucesso!
+      </div>
+      <div *ngIf="erro" class="feedback error" role="alert">
+        ❌ Ocorreu um erro ao publicar a vaga.
+      </div>
+    </form>
+  </div>
 </section>
