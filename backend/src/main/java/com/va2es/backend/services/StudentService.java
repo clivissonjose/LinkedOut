@@ -22,6 +22,11 @@ public class StudentService {
 
     private UserRepository userRepository;
 
+    StudentService(StudentRepository studentRepository, UserRepository userRepository){
+        this.studentRepository = studentRepository;
+        this.userRepository = userRepository;
+    }
+
     public StudentResponseDTO create(StudentRequestDTO dto) {
         // valid cpf
         if (studentRepository.existsByCpf(dto.cpf)) {
