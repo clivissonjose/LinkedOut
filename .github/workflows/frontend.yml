@@ -20,6 +20,14 @@ jobs:
 
       - name: Instalar dependências
         run: npm ci
+        working-directory: frontend/LinkedOut
 
       - name: Build do projeto Angular
         run: npm run build -- --configuration=production
+        working-directory: frontend/LinkedOut
+#
+ #     - name: Deploy 
+  #      uses: peaceiris/actions-gh-pages@v3
+   #     with:
+    #      github_token: ${{ secrets.GITHUB_TOKEN }}
+      #    publish_dir: frontend/LinkedOut/dist/linked-out
