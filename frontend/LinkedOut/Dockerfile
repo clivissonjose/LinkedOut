@@ -7,11 +7,13 @@ RUN npm install
 
 COPY . .
 
+# Gera os arquivos de produção do Angular
 RUN npm run build --prod
 
 FROM nginx:alpine
 
-COPY --from=build /app/dist/ /usr/share/nginx/html
+# Copia a pasta correta da build Angular
+COPY --from=build /app/dist/linked-out /usr/share/nginx/html
 
 EXPOSE 80
 
