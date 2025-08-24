@@ -8,9 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.LocalDate;
 
 import org.junit.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.va2es.backend.dto.StudentRequestDTO;
@@ -211,5 +213,39 @@ public class StudentServiceTest {
         assertEquals("João Silva Atualizado", updatedResponse.fullName);
         assertEquals("Letras", updatedResponse.course);
     }
+
+@Test
+public void naoDevePermitirDeletarEstudanteSemAutenticacao() {
+    // cria e salva o usuário
+    User user = new User(
+            "user@test3.com",
+            "password123",
+            UserRole.ADMIN,
+            "João de Teste"
+    );
+    User savedUser = userRepository.save(user);
+
+    // cria DTO do estudante
+    StudentRequestDTO dto = new StudentRequestDTO();
+    dto.fullName = "Maria Silva";
+    dto.birthDate = LocalDate.of(2001, 2, 2);
+    dto.cpf = "12312312399";
+    dto.phone = "999888777";
+    dto.course = "Engenharia";
+    dto.currentPeriod = 3;
+    dto.academicSummary = "Resumo";
+    dto.userId = savedUser.getId();
+
+    StudentResponseDTO response = studentService.create(dto);
+
+    // 🔑 NÃO setamos o SecurityContextHolder aqui → simula usuário não autenticado
+
+    // espera AccessDeniedException
+    assertThrows(
+            org.springframework.security.access.AccessDeniedException.class,
+            () -> studentService.delete(response.id)
+    );
+}
+
 
 }
