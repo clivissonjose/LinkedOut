@@ -79,6 +79,11 @@
     <version>2.3.232</version>
     <!-- Optional: Add <scope>test</scope> if H2 is only for testing -->
 </dependency>
+<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
 
 
 	</dependencies>
