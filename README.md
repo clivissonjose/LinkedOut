@@ -33,3 +33,8 @@ Esse projeto está sendo desenvolvido com intuito de avaliação para a 2° Veri
 
 ## 🛠️ Status do Projeto  
 Em desenvolvimento 
+
+## Links do Deploy
+
+- **Backend**: https://linkedout-2-qr7v.onrender.com/
+- **Frontend**: https://frontend-linkedout.onrender.com/
