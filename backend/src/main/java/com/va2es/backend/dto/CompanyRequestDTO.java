@@ -1,7 +1,6 @@
 package com.va2es.backend.dto;
 
-import com.va2es.backend.validator.CNPJ;
-import com.va2es.backend.validator.Phone;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
