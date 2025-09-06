@@ -1,5 +1,7 @@
 package com.va2es.backend.models;
 
+import com.va2es.backend.validator.CPF;
+import com.va2es.backend.validator.Phone;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -13,8 +15,13 @@ public class Student {
 
     private String fullName;
     private LocalDate birthDate;
+
+    @CPF
     private String cpf;
+
+    @Phone
     private String phone;
+
     private String course;
     private int currentPeriod;
 

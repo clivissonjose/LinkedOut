@@ -1,7 +1,6 @@
 package com.va2es.backend.dto;
 
-import com.va2es.backend.validator.CPF;
-import com.va2es.backend.validator.Phone;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
@@ -19,11 +18,9 @@ public class StudentRequestDTO {
     public LocalDate birthDate;
 
     @NotNull(message = "O CPF é obrigatório.")
-    @CPF
     public String cpf;
 
     @NotNull(message = "O telefone é obrigatório.")
-    @Phone
     public String phone;
 
     public String course;
