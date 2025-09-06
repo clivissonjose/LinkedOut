@@ -23,13 +23,13 @@ import java.util.stream.Collectors;
 @Service
 public class StudentService {
 
-    private VacancyRepository vacancyRepository;
+    private final VacancyRepository vacancyRepository;
 
-    private ApplicationRepository applicationRepository;
+    private final ApplicationRepository applicationRepository;
 
-    private StudentRepository studentRepository;
+    private final StudentRepository studentRepository;
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     StudentService(StudentRepository studentRepository, UserRepository userRepository, VacancyRepository vacancyRepository, ApplicationRepository applicationRepository) {
         this.studentRepository = studentRepository;
