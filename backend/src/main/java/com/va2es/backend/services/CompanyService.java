@@ -1,12 +1,15 @@
 package com.va2es.backend.services;
 
+import com.va2es.backend.dto.ApplicationForCompanyDTO;
 import com.va2es.backend.dto.CompanyRequestDTO;
 import com.va2es.backend.dto.CompanyResponseDTO;
 import com.va2es.backend.dto.StudentPublicDTO;
 
+import com.va2es.backend.models.Application;
 import com.va2es.backend.models.Company;
 import com.va2es.backend.models.Student;
 import com.va2es.backend.models.User;
+import com.va2es.backend.repositories.ApplicationRepository;
 import com.va2es.backend.repositories.CompanyRepository;
 import com.va2es.backend.repositories.StudentRepository;
 
@@ -23,6 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,14 +36,15 @@ public class CompanyService {
     private final CompanyRepository empresaRepository;
     private final StudentRepository estudanteRepository;
     private final UserRepository userRepository;
+    private final ApplicationRepository applicationRepository;
 
 
-    public CompanyService(CompanyRepository empresaRepository, StudentRepository estudanteRepository, UserRepository userRepository) {
+    public CompanyService(CompanyRepository empresaRepository, StudentRepository estudanteRepository, UserRepository userRepository, ApplicationRepository applicationRepository) {
         this.empresaRepository = empresaRepository;
         this.estudanteRepository = estudanteRepository;
         this.userRepository = userRepository;
+        this.applicationRepository = applicationRepository;
     }
-
       public CompanyResponseDTO create(CompanyRequestDTO dto) {
 
         if(empresaRepository.findByCnpj(dto.cnpj).isPresent()){
@@ -207,6 +212,30 @@ public class CompanyService {
     User user = (User) auth.getPrincipal();
     return user.getId();
 }
+
+    public List<ApplicationForCompanyDTO> getApplicationsForCompany(Long companyId) {
+        checkPermission(companyId);
+        List<Application> applications = applicationRepository.findByVacancy_Company_Id(companyId);
+
+        if (applications.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return applications.stream()
+                .map(this::toApplicationDTO)
+                .collect(Collectors.toList());
+    }
+
+    private ApplicationForCompanyDTO toApplicationDTO(Application app) {
+        return new ApplicationForCompanyDTO(
+                app.getId(),
+                app.getApplicationDate(),
+                app.getVacancy().getId(),
+                app.getVacancy().getTitulo(),
+                app.getStudent().getId(),
+                app.getStudent().getFullName(),
+                app.getStudent().getCourse()
+        );
+    }
 
 
 }

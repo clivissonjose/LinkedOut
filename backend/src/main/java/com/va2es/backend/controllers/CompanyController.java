@@ -1,5 +1,6 @@
 package com.va2es.backend.controllers;
 
+import com.va2es.backend.dto.ApplicationForCompanyDTO;
 import com.va2es.backend.dto.CompanyRequestDTO;
 import com.va2es.backend.dto.CompanyResponseDTO;
 import com.va2es.backend.dto.StudentPublicDTO;
@@ -69,5 +70,11 @@ public class CompanyController {
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @GetMapping("/{id}/applications")
+    public ResponseEntity<List<ApplicationForCompanyDTO>> getCompanyApplications(@PathVariable Long id) {
+        List<ApplicationForCompanyDTO> applications = empresaService.getApplicationsForCompany(id);
+        return ResponseEntity.ok(applications);
     }
 }
