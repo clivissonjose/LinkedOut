@@ -45,4 +45,10 @@ public class StudentController {
         studentService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/apply/{vacancyId}")
+    public ResponseEntity<Void> applyToVacancy(@PathVariable Long id, @PathVariable Long vacancyId) {
+        studentService.applyToVacancy(id, vacancyId);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
 }

@@ -2,15 +2,20 @@ package com.va2es.backend.services;
 
 import com.va2es.backend.dto.StudentRequestDTO;
 import com.va2es.backend.dto.StudentResponseDTO;
+import com.va2es.backend.models.Application;
 import com.va2es.backend.models.Student;
 import com.va2es.backend.models.User;
+import com.va2es.backend.models.Vacancy;
+import com.va2es.backend.repositories.ApplicationRepository;
 import com.va2es.backend.repositories.StudentRepository;
 import com.va2es.backend.repositories.UserRepository;
+import com.va2es.backend.repositories.VacancyRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,13 +23,19 @@ import java.util.stream.Collectors;
 @Service
 public class StudentService {
 
+    private VacancyRepository vacancyRepository;
+
+    private ApplicationRepository applicationRepository;
+
     private StudentRepository studentRepository;
 
     private UserRepository userRepository;
 
-    StudentService(StudentRepository studentRepository, UserRepository userRepository){
+    StudentService(StudentRepository studentRepository, UserRepository userRepository, VacancyRepository vacancyRepository, ApplicationRepository applicationRepository) {
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
+        this.vacancyRepository = vacancyRepository;
+        this.applicationRepository = applicationRepository;
     }
 
     public StudentResponseDTO create(StudentRequestDTO dto) {
@@ -126,6 +137,23 @@ public class StudentService {
         if (!student.getUser().getId().equals(userId)) {
             throw new AccessDeniedException("Acesso negado: você só pode acessar o seu próprio cadastro.");
         }
+    }
+
+    public void applyToVacancy(Long studentId, Long vacancyId) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new EntityNotFoundException("Estudante não encontrado"));
+
+        checkPermission(studentId);
+
+        Vacancy vacancy = vacancyRepository.findById(vacancyId)
+                .orElseThrow(() -> new EntityNotFoundException("Vaga não encontrada"));
+
+        if (applicationRepository.findByStudentIdAndVacancyId(studentId, vacancyId).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Você já se candidatou para esta vaga.");
+        }
+
+        Application application = new Application(student, vacancy);
+        applicationRepository.save(application);
     }
 
     // convert objet to dto to request
