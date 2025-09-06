@@ -1,5 +1,7 @@
 package com.va2es.backend.models;
 
+import com.va2es.backend.validator.CNPJ;
+import com.va2es.backend.validator.Phone;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -22,9 +24,11 @@ public class Company {
     private String nomeDaEmpresa;
 
     @Column(nullable = false, unique = true)
+    @CNPJ
     private String cnpj;
 
     @Column(nullable = true)
+    @Phone
     private String telefone;
 
     @Column(nullable = false)

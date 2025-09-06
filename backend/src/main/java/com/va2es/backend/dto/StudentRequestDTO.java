@@ -19,11 +19,9 @@ public class StudentRequestDTO {
     public LocalDate birthDate;
 
     @NotNull(message = "O CPF é obrigatório.")
-    @CPF
     public String cpf;
 
     @NotNull(message = "O telefone é obrigatório.")
-    @Phone
     public String phone;
 
     public String course;
