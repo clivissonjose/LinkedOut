@@ -201,6 +201,22 @@ public class CompanyService {
         }
     }
 
+    private void checkOwnershipPermission(Long companyId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new AccessDeniedException("Acesso negado: usuário não autenticado.");
+        }
+
+        if (companyId == null) {
+            throw new AccessDeniedException("Acesso negado: operação inválida.");
+        }
+
+        Long userId = getAuthenticatedUserId(auth);
+        if (!isOwner(companyId, userId)) {
+            throw new AccessDeniedException("Acesso negado: apenas o representante da empresa pode executar esta ação.");
+        }
+    }
+
     private boolean isOwner(Long companyId, Long userId) {
         Company empresa = empresaRepository.findById(companyId)
                 .orElseThrow(() -> new EntityNotFoundException("Empresa não encontrada com id: " + companyId));
@@ -214,7 +230,8 @@ public class CompanyService {
 }
 
     public List<ApplicationForCompanyDTO> getApplicationsForCompany(Long companyId) {
-        checkPermission(companyId);
+        checkOwnershipPermission(companyId);
+
         List<Application> applications = applicationRepository.findByVacancy_Company_Id(companyId);
 
         if (applications.isEmpty()) {
@@ -224,6 +241,7 @@ public class CompanyService {
                 .map(this::toApplicationDTO)
                 .collect(Collectors.toList());
     }
+
 
     private ApplicationForCompanyDTO toApplicationDTO(Application app) {
         return new ApplicationForCompanyDTO(
