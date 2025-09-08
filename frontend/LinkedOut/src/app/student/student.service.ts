@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 
 export interface Estudante {
@@ -12,14 +12,22 @@ export interface Estudante {
   curso: string;
   periodoAtual: number;
   resumoAcademico: string;
-  userId: number; // userId é necessário para a lógica no frontend
+  userId: number;
   userEmail: string;
 }
 
-// Interface para a lista de usuários que o admin vai ver
 export interface Usuario {
   id: number;
   nome: string;
+}
+
+// ---> NOVA INTERFACE PARA A RESPOSTA DA API <---
+export interface ApplicationForStudent {
+  applicationId: number;
+  vacancyId: number;
+  vacancyTitle: string;
+  companyName: string;
+  applicationDate: string;
 }
 
 @Injectable({
@@ -35,13 +43,30 @@ export class StudentService {
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
-  // Novo método para buscar usuários
   getUsuarios(): Observable<Usuario[]> {
     return this.http.get<Usuario[]>(`${this.apiUrl}/users`, { headers: this.getHeaders() });
   }
 
   getEstudantes(): Observable<Estudante[]> {
     return this.http.get<Estudante[]>(`${this.apiUrl}/students`, { headers: this.getHeaders() });
+  }
+
+  getStudentProfileForCurrentUser(): Observable<Estudante | null> {
+    return this.getEstudantes().pipe(
+      map(estudantes => (estudantes && estudantes.length > 0) ? estudantes[0] : null)
+    );
+  }
+
+  applyToVacancy(studentId: number, vacancyId: number): Observable<void> {
+    const headers = this.getHeaders();
+    return this.http.post<void>(`${this.apiUrl}/students/${studentId}/apply/${vacancyId}`, {}, { headers });
+  }
+
+  // ---> NOVO MÉTODO ADICIONADO AQUI <---
+  // Busca as candidaturas de um estudante.
+  getStudentApplications(studentId: number): Observable<ApplicationForStudent[]> {
+    const headers = this.getHeaders();
+    return this.http.get<ApplicationForStudent[]>(`${this.apiUrl}/students/${studentId}/applications`, { headers });
   }
 
   createEstudante(estudante: any): Observable<Estudante> {

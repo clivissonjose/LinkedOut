@@ -1,25 +1,10 @@
 package com.va2es.backend.services;
 
-import com.va2es.backend.dto.ApplicationForCompanyDTO;
-import com.va2es.backend.dto.CompanyRequestDTO;
-import com.va2es.backend.dto.CompanyResponseDTO;
-import com.va2es.backend.dto.StudentPublicDTO;
-
-import com.va2es.backend.models.Application;
-import com.va2es.backend.models.Company;
-import com.va2es.backend.models.Student;
-import com.va2es.backend.models.User;
+import com.va2es.backend.dto.*;
+import com.va2es.backend.models.*;
 import com.va2es.backend.models.enums.UserRole;
-import com.va2es.backend.repositories.ApplicationRepository;
-import com.va2es.backend.repositories.CompanyRepository;
-import com.va2es.backend.repositories.StudentRepository;
-
-import com.va2es.backend.repositories.UserRepository;
-
-
+import com.va2es.backend.repositories.*;
 import jakarta.persistence.EntityNotFoundException;
-
-
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -27,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,13 +24,14 @@ public class CompanyService {
     private final StudentRepository estudanteRepository;
     private final UserRepository userRepository;
     private final ApplicationRepository applicationRepository;
+    private final VacancyRepository vacancyRepository;
 
-
-    public CompanyService(CompanyRepository empresaRepository, StudentRepository estudanteRepository, UserRepository userRepository, ApplicationRepository applicationRepository) {
+    public CompanyService(CompanyRepository empresaRepository, StudentRepository estudanteRepository, UserRepository userRepository, ApplicationRepository applicationRepository, VacancyRepository vacancyRepository) {
         this.empresaRepository = empresaRepository;
         this.estudanteRepository = estudanteRepository;
         this.userRepository = userRepository;
         this.applicationRepository = applicationRepository;
+        this.vacancyRepository = vacancyRepository;
     }
 
     public CompanyResponseDTO create(CompanyRequestDTO dto) {
@@ -55,7 +42,6 @@ public class CompanyService {
         User representante = userRepository.findById(dto.representanteDaEmpresaId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário representante não encontrado com id:" + dto.representanteDaEmpresaId));
 
-        // ---> GATILHO DE PROMOÇÃO DE ROLE <---
         if (representante.getRole() != UserRole.ADMIN) {
             representante.setRole(UserRole.GESTOR);
             userRepository.save(representante);
@@ -72,46 +58,24 @@ public class CompanyService {
         return toDTO(empresa);
     }
 
-
     public CompanyResponseDTO findById(Long id) {
-        checkPermission(id);
         Company empresa = empresaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Empresa não encontrada com id:" + id));
-        return  toDTO(empresa);
+        return toDTO(empresa);
     }
 
-     public List<CompanyResponseDTO> findAll() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    if (auth == null) {
-        throw new AccessDeniedException("Usuário não autenticado.");
-    }
-
-    boolean isAdmin = auth.getAuthorities().stream()
-        .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
-    if (isAdmin) {
-        return empresaRepository.findAll()
-                .stream()
+    public List<CompanyResponseDTO> findAll() {
+        return empresaRepository.findAll().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
-    Long userId = getAuthenticatedUserId(auth);
-
-    return empresaRepository.findAll().stream()
-            .filter(c -> c.getRepresentanteDaEmpresa() != null &&
-                         c.getRepresentanteDaEmpresa().getId().equals(userId))
-            .map(this::toDTO)
-            .collect(Collectors.toList());
-}
-
 
     public void deleteById(Long id) {
         checkPermission(id);
         Company empresa = empresaRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada"));
-
         empresaRepository.delete(empresa);
     }
-
 
     public CompanyResponseDTO update(Long id, CompanyRequestDTO dadosAtualizados) {
         checkPermission(id);
@@ -119,13 +83,13 @@ public class CompanyService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada"));
 
         empresaRepository.findByCnpj(dadosAtualizados.cnpj).ifPresent(empresaExistente -> {
-        if (!empresaExistente.getId().equals(id)) {
-            throw new IllegalArgumentException("Já existe uma empresa com este CNPJ.");
-        }
+            if (!empresaExistente.getId().equals(id)) {
+                throw new IllegalArgumentException("Já existe uma empresa com este CNPJ.");
+            }
         });
 
-       User representanteDaEmpresaId = userRepository.findById(dadosAtualizados.representanteDaEmpresaId)
-               .orElseThrow(() -> new EntityNotFoundException("Usuário representante não encontrado com id:" + dadosAtualizados.representanteDaEmpresaId));
+        User representanteDaEmpresaId = userRepository.findById(dadosAtualizados.representanteDaEmpresaId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário representante não encontrado com id:" + dadosAtualizados.representanteDaEmpresaId));
 
         empresa.setNomeDaEmpresa(dadosAtualizados.nomeDaEmpresa);
         empresa.setCnpj(dadosAtualizados.cnpj);
@@ -134,21 +98,18 @@ public class CompanyService {
         empresa.setRepresentanteDaEmpresa(representanteDaEmpresaId);
 
         empresaRepository.save(empresa);
-        return  toDTO(empresa);
+        return toDTO(empresa);
     }
 
     public List<CompanyResponseDTO> buscarPorNomeOuArea(String nome, String area) {
         List<Company> empresas = empresaRepository
-            .findByNomeDaEmpresaContainingIgnoreCaseOrAreaDeAtuacaoContainingIgnoreCase(
-                nome != null ? nome : "",
-                area != null ? area : ""
-            );
-
-        return empresas.stream()
-            .map(this::toDTO)
-            .collect(Collectors.toList());
+                .findByNomeDaEmpresaContainingIgnoreCaseOrAreaDeAtuacaoContainingIgnoreCase(
+                        nome != null ? nome : "",
+                        area != null ? area : ""
+                );
+        return empresas.stream().map(this::toDTO).collect(Collectors.toList());
     }
-    
+
     private CompanyResponseDTO toDTO(Company empresa) {
         return new CompanyResponseDTO(
                 empresa.getId(),
@@ -158,44 +119,35 @@ public class CompanyService {
                 empresa.getAreaDeAtuacao(),
                 empresa.getRepresentanteDaEmpresa().getId(),
                 empresa.getRepresentanteDaEmpresa().getNome()
-                );
+        );
     }
 
-
-    // Buscar por nome do curso e intervalo de periodos
     public List<StudentPublicDTO> filtroEstudantesPorAreaEPeriodo(String course, int periodMin, int periodMax){
-
         if (course == null || course.trim().isEmpty()) {
             throw new IllegalArgumentException("O curso deve ser informado.");
         }
-     
-       List<Student> estudantes = this.estudanteRepository.findByCourseAndCurrentPeriodBetween(course, periodMin, periodMax);
-        
-       if (estudantes.isEmpty()) {
-          throw new EntityNotFoundException("Nenhum estudante encontrado para os critérios informados.");
-       }
-
-       return estudantes.stream()
-            .map(estudante -> new StudentPublicDTO(
-                    estudante.getFullName(),
-                    estudante.getCurrentPeriod(),
-                    estudante.getPhone(),
-                    estudante.getCourse(),
-                    estudante.getAcademicSummary()
-            ))
-            .collect(Collectors.toList());
-      
+        List<Student> estudantes = this.estudanteRepository.findByCourseAndCurrentPeriodBetween(course, periodMin, periodMax);
+        if (estudantes.isEmpty()) {
+            throw new EntityNotFoundException("Nenhum estudante encontrado para os critérios informados.");
+        }
+        return estudantes.stream()
+                .map(estudante -> new StudentPublicDTO(
+                        estudante.getFullName(),
+                        estudante.getCurrentPeriod(),
+                        estudante.getPhone(),
+                        estudante.getCourse(),
+                        estudante.getAcademicSummary()
+                ))
+                .collect(Collectors.toList());
     }
 
-    /*métodos para apenas admin e representantes da empresa possam ter
-    acesso as funcionalidades da Empresa*/
     private void checkPermission(Long companyId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             throw new AccessDeniedException("Acesso negado: usuário não autenticado.");
         }
         boolean isAdmin = auth.getAuthorities().stream()
-            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         if (isAdmin) return;
 
         if (companyId == null) {
@@ -208,16 +160,15 @@ public class CompanyService {
         }
     }
 
+    // ---> ESTE É O MÉTODO CORRETO PARA VERIFICAR O DONO <---
     private void checkOwnershipPermission(Long companyId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             throw new AccessDeniedException("Acesso negado: usuário não autenticado.");
         }
-
         if (companyId == null) {
             throw new AccessDeniedException("Acesso negado: operação inválida.");
         }
-
         Long userId = getAuthenticatedUserId(auth);
         if (!isOwner(companyId, userId)) {
             throw new AccessDeniedException("Acesso negado: apenas o representante da empresa pode executar esta ação.");
@@ -232,23 +183,38 @@ public class CompanyService {
     }
 
     private Long getAuthenticatedUserId(Authentication auth) {
-    User user = (User) auth.getPrincipal();
-    return user.getId();
-}
-
-    public List<ApplicationForCompanyDTO> getApplicationsForCompany(Long companyId) {
-        checkOwnershipPermission(companyId);
-
-        List<Application> applications = applicationRepository.findByVacancy_Company_Id(companyId);
-
-        if (applications.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return applications.stream()
-                .map(this::toApplicationDTO)
-                .collect(Collectors.toList());
+        User user = (User) auth.getPrincipal();
+        return user.getId();
     }
 
+
+    public List<VacancyWithApplicantsDTO> getApplicationsForCompany(Long companyId) {
+        checkOwnershipPermission(companyId); // A verificação de segurança continua
+
+        // 1. Buscar todas as vagas que pertencem à empresa
+        List<Vacancy> vacancies = vacancyRepository.findByCompanyId(companyId);
+
+        List<VacancyWithApplicantsDTO> result = new ArrayList<>();
+
+        // 2. Para cada vaga, buscar suas candidaturas específicas
+        for (Vacancy vacancy : vacancies) {
+            List<Application> applications = applicationRepository.findByVacancy_Id(vacancy.getId());
+
+            // 3. Mapear as candidaturas para o ApplicantDTO
+            List<ApplicantDTO> applicants = applications.stream()
+                    .map(app -> new ApplicantDTO(
+                            app.getStudent().getId(),
+                            app.getStudent().getFullName(),
+                            app.getStudent().getCourse(),
+                            app.getApplicationDate()))
+                    .collect(Collectors.toList());
+
+            // 4. Adicionar a vaga com seus candidatos à lista de resultado
+            result.add(new VacancyWithApplicantsDTO(vacancy.getId(), vacancy.getTitulo(), applicants));
+        }
+
+        return result;
+    }
 
     private ApplicationForCompanyDTO toApplicationDTO(Application app) {
         return new ApplicationForCompanyDTO(
@@ -261,6 +227,4 @@ public class CompanyService {
                 app.getStudent().getCourse()
         );
     }
-
-
 }

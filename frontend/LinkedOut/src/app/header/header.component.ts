@@ -16,8 +16,6 @@ import { CommonModule } from '@angular/common';
         <a routerLink="/estudantes" *ngIf="isAuthenticated()" style="margin-right: 1rem; color:white; text-decoration:none;">Estudantes</a>
       </nav>
       <nav>
-        <a routerLink="/vaga/publicar" *ngIf="hasRole('ADMIN') || hasRole('GESTOR')" style="margin-right: 1rem; color:white; background-color: #03dac6; padding: 0.5rem 1rem; border-radius: 4px; text-decoration:none;">Publicar Vaga</a>
-
         <a *ngIf="!isAuthenticated()" routerLink="/login" style="margin-right: 1rem; color:white; text-decoration:none;">Login</a>
         <a *ngIf="isAuthenticated()" (click)="logout()" style="color:white; text-decoration:none; cursor:pointer;">Logout</a>
       </nav>
@@ -38,7 +36,6 @@ export class HeaderComponent {
   }
 
   hasRole(role: string): boolean {
-    // A lógica complexa agora está centralizada no AuthService
     return this.auth.hasRole(role);
   }
 }
