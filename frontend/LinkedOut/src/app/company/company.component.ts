@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
   standalone: true,
   styleUrls: ['./company.component.css'],
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  // Template atualizado com *ngIf para controle de acesso visual
   template: `
     <section>
       <h2>Empresas Cadastradas</h2>
@@ -60,11 +61,14 @@ import { Router } from '@angular/router';
           <input type="text" formControlName="telefone" placeholder="Telefone" />
           <input type="text" formControlName="areaDeAtuacao" placeholder="Área de Atuação" />
 
-          <label for="representante">Representante:</label>
-          <select id="representante" formControlName="representanteId">
-            <option value="">Selecione um representante</option>
-            <option *ngFor="let user of usuarios" [value]="user.id">{{ user.nome }}</option>
-          </select>
+          <ng-container *ngIf="authService.hasRole('ADMIN')">
+            <label for="representante">Representante:</label>
+            <select id="representante" formControlName="representanteId">
+              <option value="">Selecione um representante</option>
+              <option *ngFor="let user of usuarios" [value]="user.id">{{ user.nome }}</option>
+            </select>
+          </ng-container>
+
           <div class="botoes-formulario">
             <button type="submit" [disabled]="formEmpresa.invalid">
               {{ empresaEditando ? 'Salvar' : 'Cadastrar' }}
@@ -139,13 +143,23 @@ export class CompanyComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     if (this.formEmpresa.invalid) return;
 
+    // Se o usuário logado for GESTOR, o ID do representante é o dele mesmo
+    const representanteId = this.authService.hasRole('GESTOR') && !this.authService.hasRole('ADMIN')
+      ? this.authService.getUserId()
+      : this.formEmpresa.value.representanteId;
+
+    if (!representanteId) {
+      alert('É necessário selecionar um representante.');
+      return;
+    }
+
     const formValue = this.formEmpresa.value;
     const empresaPayload = {
       nomeDaEmpresa: formValue.nomeDaEmpresa,
       cnpj: formValue.cnpj,
       telefone: formValue.telefone,
       areaDeAtuacao: formValue.areaDeAtuacao,
-      representanteDaEmpresaId: formValue.representanteId
+      representanteDaEmpresaId: representanteId
     };
 
     const action = this.empresaEditando
@@ -174,12 +188,11 @@ export class CompanyComponent implements OnInit, OnDestroy {
   editarEmpresa(empresa: Empresa) {
     this.empresaEditando = empresa;
     this.mostrarFormulario = true;
-    this.formEmpresa.setValue({
+    this.formEmpresa.patchValue({ // Usar patchValue para popular apenas os campos existentes
       nomeDaEmpresa: empresa.nomeDaEmpresa,
       cnpj: empresa.cnpj,
       telefone: empresa.telefone || '',
       areaDeAtuacao: empresa.areaDeAtuacao,
-      // CORREÇÃO 3: Usar a propriedade correta para preencher o formulário
       representanteId: empresa.representanteDaEmpresaId
     });
   }

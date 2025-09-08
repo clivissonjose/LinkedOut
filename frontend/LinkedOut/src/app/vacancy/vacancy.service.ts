@@ -24,7 +24,7 @@ export interface VacancyResponse {
   tipo: 'ESTAGIO' | 'TRAINEE' | 'EMPREGO';
   idDaEmpresa: number;
   nomeDaEmpresa: string;
-  representanteId: number; // ---> CAMPO ADICIONADO <---
+  representanteId: number;
   dataPublicacao: string;
   dataTermino: string;
 }
@@ -35,15 +35,21 @@ export class VacancyService {
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 
-  createVacancy(vacancy: VacancyRequest): Observable<any> {
+  private getHeaders() {
     const token = this.auth.getToken();
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    return this.http.post(`${this.API}/create`, vacancy, { headers });
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
+  }
+
+  createVacancy(vacancy: VacancyRequest): Observable<any> {
+    return this.http.post(`${this.API}/create`, vacancy, { headers: this.getHeaders() });
   }
 
   getAllVacancies(): Observable<VacancyResponse[]> {
-    const token = this.auth.getToken();
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    return this.http.get<VacancyResponse[]>(`${this.API}/list`, { headers });
+    return this.http.get<VacancyResponse[]>(`${this.API}/list`, { headers: this.getHeaders() });
+  }
+
+  // ---> NOVO MÉTODO ADICIONADO <---
+  deleteVacancy(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API}/delete/${id}`, { headers: this.getHeaders() });
   }
 }

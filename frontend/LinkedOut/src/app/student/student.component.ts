@@ -20,7 +20,7 @@ export class StudentComponent implements OnInit, OnDestroy {
   public authService = inject(AuthService);
   private destroy$ = new Subject<void>();
 
-  usuarios: Usuario[] = []; // Para a lista de usuários do admin
+  usuarios: Usuario[] = [];
   estudantes: Estudante[] = [];
   mostrarFormulario = false;
   estudanteEditando: Estudante | null = null;
@@ -37,13 +37,11 @@ export class StudentComponent implements OnInit, OnDestroy {
     curso: ['', Validators.required],
     periodoAtual: ['', [Validators.required, Validators.min(1)]],
     resumoAcademico: ['', Validators.required],
-    // Novo campo para o admin selecionar o usuário
     userId: [null]
   });
 
   ngOnInit(): void {
     this.carregarEstudantes();
-    // Se for admin, carrega a lista de usuários para o formulário
     if (this.authService.hasRole('ADMIN')) {
       this.buscarUsuarios();
     }
@@ -85,10 +83,13 @@ export class StudentComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     if (this.formEstudante.invalid) return;
 
-    // Se for admin e estiver criando um novo, verifica se o usuário foi selecionado
-    if (this.authService.hasRole('ADMIN') && !this.estudanteEditando && !this.formEstudante.value.userId) {
-      alert('Como administrador, você deve selecionar um usuário para criar o perfil de estudante.');
-      return;
+    let userIdParaPayload = this.authService.getUserId();
+    if (this.authService.hasRole('ADMIN') && !this.estudanteEditando) {
+      if (!this.formEstudante.value.userId) {
+        alert('Como administrador, você deve selecionar um usuário para criar o perfil de estudante.');
+        return;
+      }
+      userIdParaPayload = this.formEstudante.value.userId;
     }
 
     const formValue = this.formEstudante.value;
@@ -100,12 +101,7 @@ export class StudentComponent implements OnInit, OnDestroy {
       course: formValue.curso,
       currentPeriod: formValue.periodoAtual,
       academicSummary: formValue.resumoAcademico,
-      // Lógica para definir o userId:
-      // Se for admin, usa o valor do select.
-      // Se não, usa o ID do próprio usuário logado.
-      userId: this.authService.hasRole('ADMIN') && !this.estudanteEditando
-        ? formValue.userId
-        : (this.estudanteEditando ? this.estudanteEditando.userId : this.authService.getUserId())
+      userId: userIdParaPayload
     };
 
     const action = this.estudanteEditando
@@ -117,10 +113,13 @@ export class StudentComponent implements OnInit, OnDestroy {
         alert(`Perfil de estudante ${this.estudanteEditando ? 'atualizado' : 'cadastrado'} com sucesso!`);
         this.cancelarCadastro();
         this.carregarEstudantes();
+        if (!this.estudanteEditando && !this.authService.hasRole('ADMIN')) {
+          window.location.reload();
+        }
       },
       error: (error) => {
         console.error('Erro ao salvar perfil:', error);
-        alert('Erro ao salvar perfil!');
+        alert(`Erro ao salvar perfil: ${error.error?.message || 'Ocorreu um problema.'}`);
       }
     });
   }
@@ -136,12 +135,11 @@ export class StudentComponent implements OnInit, OnDestroy {
       curso: estudante.curso,
       periodoAtual: estudante.periodoAtual,
       resumoAcademico: estudante.resumoAcademico,
-      // O campo userId não é editável, então não precisa estar no form
     });
   }
 
   excluirEstudante(id: number) {
-    if (!confirm('Deseja excluir este perfil de estudante?')) return;
+    if (!confirm('Deseja excluir este perfil de estudante? A ação não pode ser desfeita.')) return;
 
     this.studentService.deleteEstudante(id)
       .pipe(takeUntil(this.destroy$))

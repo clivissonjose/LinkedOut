@@ -7,14 +7,7 @@
       <input type="text" placeholder="Filtrar por área" [(ngModel)]="filtroArea">
     </div>
 
-    <div class="gestor-actions" *ngIf="(authService.hasRole('GESTOR') || authService.hasRole('ADMIN')) && managedCompanies.length > 0">
-      <h4>Ações do Gestor</h4>
-      <button *ngFor="let company of managedCompanies" (click)="verCandidaturas(company.id)" class="btn-view-apps">
-        Ver Candidaturas de {{ company.nomeDaEmpresa }}
-      </button>
-    </div>
-
-    <div *ngIf="vagasFiltradas.length === 0">
+    <div *ngIf="vagasFiltradas.length === 0" class="sem-vagas">
       <p>Nenhuma vaga disponível no momento ou com os filtros selecionados.</p>
     </div>
 
@@ -28,12 +21,24 @@
       <p><strong>Data de Término:</strong> {{ vacancy.dataTermino | date: 'dd/MM/yyyy' }}</p>
 
       <div class="actions">
-        <ng-container *ngIf="authService.hasRole('STUDENT') && !authService.hasRole('ADMIN') && !authService.hasRole('GESTOR') && currentStudentId">
+        <ng-container *ngIf="authService.hasRole('STUDENT')">
           <button *ngIf="!jaCandidatado(vacancy.id)" (click)="candidatarSe(vacancy.id)" class="btn-apply">
             Candidatar-se
           </button>
           <button *ngIf="jaCandidatado(vacancy.id)" class="btn-applied" disabled>
             Inscrito
+          </button>
+        </ng-container>
+
+        <ng-container *ngIf="isManagerOf(vacancy)">
+          <button (click)="verCandidaturas(vacancy.idDaEmpresa)" class="btn-view-apps">
+            Ver Candidaturas
+          </button>
+          <button (click)="editarVaga(vacancy.id)" class="btn-edit">
+            Editar
+          </button>
+          <button (click)="excluirVaga(vacancy.id)" class="btn-delete">
+            Excluir
           </button>
         </ng-container>
       </div>

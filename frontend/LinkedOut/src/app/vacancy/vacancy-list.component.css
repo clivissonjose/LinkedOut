@@ -1,6 +1,17 @@
 .vacancy-list {
   padding: 1rem;
 }
+.filtros {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.filtros input {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 100%;
+}
 .vacancy-card {
   border: 1px solid #ccc;
   border-radius: 8px;
@@ -14,8 +25,14 @@
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
-.btn-apply, .btn-applied, .btn-view-apps {
+.sem-vagas {
+  text-align: center;
+  margin-top: 2rem;
+  color: #555;
+}
+.btn-apply, .btn-applied, .btn-view-apps, .btn-edit, .btn-delete {
   padding: 0.6rem 1.2rem;
   border: none;
   border-radius: 6px;
@@ -43,21 +60,17 @@
 .btn-view-apps:hover {
   background-color: #059669;
 }
-
-/* Nova classe adicionada para a seção de ações do gestor */
-.gestor-actions {
-  background-color: #eef1f8;
-  padding: 1rem;
-  border-radius: 8px;
-  margin: 1.5rem 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.75rem;
+.btn-edit {
+  background-color: #f59e0b;
+  color: white;
 }
-
-.gestor-actions h4 {
-  margin: 0 0 0.5rem 0;
-  color: #1f2d3d;
-  font-weight: 600;
+.btn-edit:hover {
+  background-color: #d97706;
+}
+.btn-delete {
+  background-color: #ef4444;
+  color: white;
+}
+.btn-delete:hover {
+  background-color: #dc2626;
 }

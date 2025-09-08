@@ -6,8 +6,6 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../auth/auth.service';
 import { StudentService } from '../student/student.service';
 import { Router } from '@angular/router';
-// NOVOS IMPORTS
-import { CompanyService, Empresa } from '../company/company.service';
 
 @Component({
   selector: 'app-vacancy-list',
@@ -24,38 +22,15 @@ export class VacancyListComponent implements OnInit {
   currentStudentId: number | null = null;
   appliedVacancyIds = new Set<number>();
 
-  // NOVA PROPRIEDADE PARA ARMAZENAR AS EMPRESAS DO GESTOR
-  managedCompanies: Empresa[] = [];
-
   public authService = inject(AuthService);
   private studentService = inject(StudentService);
   private vacancyService = inject(VacancyService);
   private router = inject(Router);
-  // NOVO SERVIÇO INJETADO
-  private companyService = inject(CompanyService);
 
   ngOnInit(): void {
     this.carregarVagas();
-    this.carregarPerfilEstudante();
-    // NOVA CHAMADA DE MÉTODO
-    this.carregarEmpresasGerenciadas();
-  }
-
-  // NOVO MÉTODO PARA BUSCAR E FILTRAR AS EMPRESAS DO USUÁRIO
-  carregarEmpresasGerenciadas(): void {
-    // Apenas busca se o usuário for GESTOR ou ADMIN
-    if (this.authService.hasRole('GESTOR') || this.authService.hasRole('ADMIN')) {
-      const currentUserId = this.authService.getUserId();
-      this.companyService.getEmpresas().subscribe({
-        next: (allCompanies) => {
-          // Filtra a lista de todas as empresas para manter apenas aquelas
-          // cujo representante é o usuário logado.
-          this.managedCompanies = allCompanies.filter(
-            company => company.representanteDaEmpresaId === currentUserId
-          );
-        },
-        error: (err) => console.error('Erro ao carregar empresas gerenciadas:', err)
-      });
+    if (this.authService.hasRole('STUDENT')) {
+      this.carregarPerfilEstudante();
     }
   }
 
@@ -67,16 +42,14 @@ export class VacancyListComponent implements OnInit {
   }
 
   carregarPerfilEstudante(): void {
-    if (this.authService.hasRole('STUDENT')) {
-      this.studentService.getStudentProfileForCurrentUser().subscribe({
-        next: (perfil) => {
-          if (perfil) {
-            this.currentStudentId = perfil.id;
-            this.carregarCandidaturas(perfil.id);
-          }
+    this.studentService.getStudentProfileForCurrentUser().subscribe({
+      next: (perfil) => {
+        if (perfil) {
+          this.currentStudentId = perfil.id;
+          this.carregarCandidaturas(perfil.id);
         }
-      });
-    }
+      }
+    });
   }
 
   carregarCandidaturas(studentId: number): void {
@@ -101,6 +74,13 @@ export class VacancyListComponent implements OnInit {
     );
   }
 
+  // ---> NOVO MÉTODO <---
+  // Verifica se o usuário logado é o gestor da vaga ou um admin
+  isManagerOf(vacancy: VacancyResponse): boolean {
+    const userId = this.authService.getUserId();
+    return this.authService.hasRole('ADMIN') || userId === vacancy.representanteId;
+  }
+
   candidatarSe(vacancyId: number): void {
     if (!this.currentStudentId) return;
     if (!confirm('Deseja realmente se candidatar para esta vaga?')) return;
@@ -118,9 +98,33 @@ export class VacancyListComponent implements OnInit {
     return this.appliedVacancyIds.has(vacancyId);
   }
 
-  // A função de navegar para a página de candidaturas permanece a mesma
   verCandidaturas(companyId: number): void {
-    // CORREÇÃO: Navega para a rota correta que espera o ID da empresa.
     this.router.navigate(['/empresa', companyId, 'candidaturas']);
+  }
+
+  // ---> NOVO MÉTODO <---
+  excluirVaga(vacancyId: number): void {
+    if (!confirm('Tem certeza que deseja excluir esta vaga? Esta ação não pode ser desfeita.')) {
+      return;
+    }
+
+    this.vacancyService.deleteVacancy(vacancyId).subscribe({
+      next: () => {
+        alert('Vaga excluída com sucesso!');
+        // Remove a vaga da lista local para atualizar a UI instantaneamente
+        this.vagas = this.vagas.filter(v => v.id !== vacancyId);
+      },
+      error: (err) => {
+        console.error('Erro ao excluir vaga:', err);
+        alert('Erro ao excluir vaga.');
+      }
+    });
+  }
+
+  // ---> NOVO MÉTODO (PLACEHOLDER) <---
+  editarVaga(vacancyId: number): void {
+    // Futuramente, isso navegará para uma rota de edição, ex:
+    // this.router.navigate(['/vagas/editar', vacancyId]);
+    alert('Funcionalidade de edição a ser implementada.');
   }
 }

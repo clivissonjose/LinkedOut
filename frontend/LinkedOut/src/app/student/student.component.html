@@ -22,6 +22,7 @@
         </div>
       </li>
     </ul>
+
     <p *ngIf="estudantes.length > 0 && estudantesFiltrados.length === 0">Nenhum estudante encontrado com os filtros.</p>
     <p *ngIf="estudantes.length === 0">Nenhum estudante cadastrado no sistema.</p>
   </ng-container>
@@ -54,9 +55,9 @@
 
       <div *ngIf="authService.hasRole('ADMIN') && !estudanteEditando">
         <label for="usuario">Selecione o Usuário:</label>
-        <select id="usuario" formControlName="userId">
+        <select id="usuario" formControlName="userId" required>
           <option [ngValue]="null" disabled>Escolha um usuário</option>
-          <option *ngFor="let user of usuarios" [value]="user.id">{{ user.nome }}</option>
+          <option *ngFor="let user of usuarios" [value]="user.id">{{ user.nome }} ({{user.id}})</option>
         </select>
       </div>
 

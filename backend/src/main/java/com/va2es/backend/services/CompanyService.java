@@ -10,10 +10,10 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // Importante para garantir a consistência da transação
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +34,7 @@ public class CompanyService {
         this.vacancyRepository = vacancyRepository;
     }
 
+    @Transactional
     public CompanyResponseDTO create(CompanyRequestDTO dto) {
         if(empresaRepository.findByCnpj(dto.cnpj).isPresent()){
             throw new IllegalArgumentException("Já existe uma empresa com este CNPJ.");
@@ -42,7 +43,8 @@ public class CompanyService {
         User representante = userRepository.findById(dto.representanteDaEmpresaId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário representante não encontrado com id:" + dto.representanteDaEmpresaId));
 
-        if (representante.getRole() != UserRole.ADMIN) {
+        // Se o usuário for USER ou STUDENT, promove para GESTOR. Não altera se for ADMIN.
+        if (representante.getRole() == UserRole.USER || representante.getRole() == UserRole.STUDENT) {
             representante.setRole(UserRole.GESTOR);
             userRepository.save(representante);
         }
@@ -77,6 +79,7 @@ public class CompanyService {
         empresaRepository.delete(empresa);
     }
 
+    @Transactional // Garante que todas as operações com o banco sejam consistentes
     public CompanyResponseDTO update(Long id, CompanyRequestDTO dadosAtualizados) {
         checkPermission(id);
         Company empresa = empresaRepository.findById(id)
@@ -88,14 +91,35 @@ public class CompanyService {
             }
         });
 
-        User representanteDaEmpresaId = userRepository.findById(dadosAtualizados.representanteDaEmpresaId)
+        User novoRepresentante = userRepository.findById(dadosAtualizados.representanteDaEmpresaId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário representante não encontrado com id:" + dadosAtualizados.representanteDaEmpresaId));
+
+        User representanteAntigo = empresa.getRepresentanteDaEmpresa();
+
+        // ---> LÓGICA DE ATUALIZAÇÃO E REMOÇÃO DE ROLE <---
+        if (!representanteAntigo.getId().equals(novoRepresentante.getId())) {
+            // Verifica se o representante antigo ainda gerencia outras empresas
+            List<Company> outrasEmpresas = empresaRepository.findByRepresentanteDaEmpresa_Id(representanteAntigo.getId());
+            // Se esta for a única empresa que ele gerenciava, remove a role de GESTOR
+            if (outrasEmpresas.size() <= 1 && representanteAntigo.getRole() == UserRole.GESTOR) {
+                // Verifica se o usuário também tem perfil de estudante
+                boolean isStudent = estudanteRepository.findByUserId(representanteAntigo.getId()).size() > 0;
+                representanteAntigo.setRole(isStudent ? UserRole.STUDENT : UserRole.USER);
+                userRepository.save(representanteAntigo);
+            }
+        }
+
+        // Promove o novo representante se necessário
+        if (novoRepresentante.getRole() == UserRole.USER || novoRepresentante.getRole() == UserRole.STUDENT) {
+            novoRepresentante.setRole(UserRole.GESTOR);
+            userRepository.save(novoRepresentante);
+        }
 
         empresa.setNomeDaEmpresa(dadosAtualizados.nomeDaEmpresa);
         empresa.setCnpj(dadosAtualizados.cnpj);
         empresa.setTelefone(dadosAtualizados.telefone);
         empresa.setAreaDeAtuacao(dadosAtualizados.areaDeAtuacao);
-        empresa.setRepresentanteDaEmpresa(representanteDaEmpresaId);
+        empresa.setRepresentanteDaEmpresa(novoRepresentante);
 
         empresaRepository.save(empresa);
         return toDTO(empresa);
@@ -160,7 +184,6 @@ public class CompanyService {
         }
     }
 
-    // ---> ESTE É O MÉTODO CORRETO PARA VERIFICAR O DONO <---
     private void checkOwnershipPermission(Long companyId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
@@ -189,18 +212,14 @@ public class CompanyService {
 
 
     public List<VacancyWithApplicantsDTO> getApplicationsForCompany(Long companyId) {
-        checkOwnershipPermission(companyId); // A verificação de segurança continua
+        checkOwnershipPermission(companyId);
 
-        // 1. Buscar todas as vagas que pertencem à empresa
         List<Vacancy> vacancies = vacancyRepository.findByCompanyId(companyId);
-
         List<VacancyWithApplicantsDTO> result = new ArrayList<>();
 
-        // 2. Para cada vaga, buscar suas candidaturas específicas
         for (Vacancy vacancy : vacancies) {
             List<Application> applications = applicationRepository.findByVacancy_Id(vacancy.getId());
 
-            // 3. Mapear as candidaturas para o ApplicantDTO
             List<ApplicantDTO> applicants = applications.stream()
                     .map(app -> new ApplicantDTO(
                             app.getStudent().getId(),
@@ -209,7 +228,6 @@ public class CompanyService {
                             app.getApplicationDate()))
                     .collect(Collectors.toList());
 
-            // 4. Adicionar a vaga com seus candidatos à lista de resultado
             result.add(new VacancyWithApplicantsDTO(vacancy.getId(), vacancy.getTitulo(), applicants));
         }
 

@@ -18,7 +18,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional; // Importação necessária
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -39,9 +39,8 @@ public class StudentService {
         this.applicationRepository = applicationRepository;
     }
 
+    @Transactional
     public StudentResponseDTO create(StudentRequestDTO dto) {
-        // ---> NOVA VERIFICAÇÃO ADICIONADA AQUI <---
-        // Verifica se já existe um perfil de estudante para este usuário
         if (studentRepository.findByUserId(dto.getUserId()).size() > 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Este usuário já possui um perfil de estudante.");
         }
@@ -79,19 +78,16 @@ public class StudentService {
             throw new AccessDeniedException("Usuário não autenticado.");
         }
 
-        // Verifica se o usuário é ADMIN ou GESTOR
         boolean isAdminOrGestor = auth.getAuthorities().stream()
                 .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN") || role.getAuthority().equals("ROLE_GESTOR"));
 
         if (isAdminOrGestor) {
-            // Se for ADMIN ou GESTOR, retorna todos os estudantes
             return studentRepository.findAll()
                     .stream()
                     .map(this::toDTO)
                     .collect(Collectors.toList());
         }
 
-        // Para outros usuários (STUDENT, USER), retorna apenas o seu próprio perfil
         Long userId = ((User) auth.getPrincipal()).getId();
         return studentRepository.findByUserId(userId)
                 .stream()
@@ -105,6 +101,7 @@ public class StudentService {
         return toDTO(student);
     }
 
+    @Transactional
     public StudentResponseDTO update(Long id, StudentRequestDTO dto) {
         checkPermission(id);
         Student student = studentRepository.findById(id)
@@ -122,12 +119,21 @@ public class StudentService {
         return toDTO(student);
     }
 
+    @Transactional // Garante que a exclusão e a atualização do usuário ocorram juntas
     public void delete(Long id) {
         checkPermission(id);
-        if (!studentRepository.existsById(id)) {
-            throw new EntityNotFoundException("Estudante não encontrado");
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Estudante não encontrado"));
+
+        User user = student.getUser();
+        studentRepository.delete(student);
+
+        // ---> LÓGICA DE REMOÇÃO DE ROLE <---
+        // Se o usuário era um estudante (e não é também um gestor ou admin), reverte para USER
+        if (user.getRole() == UserRole.STUDENT) {
+            user.setRole(UserRole.USER);
+            userRepository.save(user);
         }
-        studentRepository.deleteById(id);
     }
 
     private void checkPermission(Long studentId) {
@@ -149,6 +155,7 @@ public class StudentService {
         }
     }
 
+    @Transactional
     public void applyToVacancy(Long studentId, Long vacancyId) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new EntityNotFoundException("Estudante não encontrado"));
@@ -167,7 +174,7 @@ public class StudentService {
     }
 
     public List<ApplicationForStudentDTO> getApplicationsByStudentId(Long studentId) {
-        checkPermission(studentId); // Garante que o estudante só veja suas próprias candidaturas
+        checkPermission(studentId);
         List<Application> applications = applicationRepository.findByStudent_Id(studentId);
         return applications.stream()
                 .map(this::toApplicationForStudentDTO)
