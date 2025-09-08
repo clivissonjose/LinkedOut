@@ -11,9 +11,9 @@ import { CommonModule } from '@angular/common';
     <header style="background-color:#6200ee; color:white; padding:1rem; display: flex; justify-content: space-between; align-items: center;">
       <nav>
         <a routerLink="/home" *ngIf="isAuthenticated()" style="margin-right: 1rem; color:white; text-decoration:none;">Home</a>
-        <a routerLink="/vagas" *ngIf="isAuthenticated()" style="margin-right: 1rem; color:white; text-decoration:none;">Ver Vagas</a>
+        <a routerLink="/vagas" *ngIf="isAuthenticated()" style="margin-right: 1rem; color:white; text-decoration:none;">Vagas</a>
         <a routerLink="/empresas" *ngIf="isAuthenticated()" style="margin-right: 1rem; color:white; text-decoration:none;">Empresas</a>
-        <a routerLink="/estudantes" *ngIf="isAuthenticated()" style="margin-right: 1rem; color:white; text-decoration:none;">Meu Perfil</a>
+        <a routerLink="/estudantes" *ngIf="isAuthenticated()" style="margin-right: 1rem; color:white; text-decoration:none;">Estudantes</a>
       </nav>
       <nav>
         <a routerLink="/vaga/publicar" *ngIf="hasRole('ADMIN') || hasRole('GESTOR')" style="margin-right: 1rem; color:white; background-color: #03dac6; padding: 0.5rem 1rem; border-radius: 4px; text-decoration:none;">Publicar Vaga</a>
@@ -38,6 +38,7 @@ export class HeaderComponent {
   }
 
   hasRole(role: string): boolean {
+    // A lógica complexa agora está centralizada no AuthService
     return this.auth.hasRole(role);
   }
 }

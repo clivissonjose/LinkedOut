@@ -29,8 +29,7 @@ export class AuthService {
 
   async register(newUser: User): Promise<User | null> {
     try {
-      // O campo 'role' é removido aqui para garantir que o backend o defina
-      const { role, ...userPayload } = newUser;
+      const { role, ...userPayload } = newUser; // Garante que a role não seja enviada
       const response = await fetch(`${this.apiUrl}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -54,9 +53,7 @@ export class AuthService {
     try {
       const decoded: any = jwtDecode(token);
       const exp = decoded.exp;
-
       if (!exp) return true;
-
       const now = Math.floor(Date.now() / 1000);
       return exp > now;
     } catch (error) {
@@ -67,9 +64,7 @@ export class AuthService {
   }
 
   /**
-   * CORREÇÃO CRÍTICA: Verifica se o usuário possui uma role.
-   * O backend envia uma lista de authorities no token (ex: "ROLE_ADMIN").
-   * Esta função agora verifica se a role necessária está presente nessa lista.
+   * CORREÇÃO DEFINITIVA: Lê a lista de "authorities" do token.
    */
   hasRole(requiredRole: string): boolean {
     const token = this.getToken();
@@ -78,13 +73,12 @@ export class AuthService {
     try {
       const decoded: any = this.decodeToken(token);
       const authorities: string[] = decoded.authorities || [];
-      // Adicionamos "ROLE_" para corresponder ao padrão do Spring Security no backend
+      // O Spring Security envia as roles com o prefixo "ROLE_", então verificamos com ele.
       return authorities.includes(`ROLE_${requiredRole.toUpperCase()}`);
     } catch {
       return false;
     }
   }
-
 
   getToken(): string | null {
     return localStorage.getItem('token');
@@ -93,7 +87,6 @@ export class AuthService {
   getUserId(): number {
     const token = this.getToken();
     if (!token) return 0;
-
     const payload = this.decodeToken(token);
     return payload?.id ?? 0;
   }

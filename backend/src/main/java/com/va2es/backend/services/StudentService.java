@@ -14,10 +14,12 @@ import com.va2es.backend.repositories.VacancyRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,11 +27,8 @@ import java.util.stream.Collectors;
 public class StudentService {
 
     private final VacancyRepository vacancyRepository;
-
     private final ApplicationRepository applicationRepository;
-
     private final StudentRepository studentRepository;
-
     private final UserRepository userRepository;
 
     StudentService(StudentRepository studentRepository, UserRepository userRepository, VacancyRepository vacancyRepository, ApplicationRepository applicationRepository) {
@@ -47,7 +46,6 @@ public class StudentService {
         User user = userRepository.findById(dto.userId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
-        // ---> GATILHO DE PROMOÇÃO DE ROLE <---
         if (user.getRole() == UserRole.USER) {
             user.setRole(UserRole.STUDENT);
             userRepository.save(user);
@@ -68,16 +66,29 @@ public class StudentService {
     }
 
     public List<StudentResponseDTO> findAll() {
-        // all user in data base
-        return studentRepository.findAll()
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) {
+            throw new AccessDeniedException("Usuário não autenticado.");
+        }
+
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
+
+        if (isAdmin) {
+            return studentRepository.findAll()
+                    .stream()
+                    .map(this::toDTO)
+                    .collect(Collectors.toList());
+        }
+
+        Long userId = ((User) auth.getPrincipal()).getId();
+        return studentRepository.findByUserId(userId)
                 .stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
     public StudentResponseDTO findById(Long id) {
-//        checkPermission(id); caso achar necessario
-        // find user and check if don´t exist
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Estudante não foi encontrado"));
         return toDTO(student);
@@ -85,41 +96,27 @@ public class StudentService {
 
     public StudentResponseDTO update(Long id, StudentRequestDTO dto) {
         checkPermission(id);
-        // find user and check if don´t exist
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Estudante não encontrado"));
 
-        // update all filds one by one
-        if (dto.fullName != null) student.setFullName(dto.fullName);
-        if (dto.birthDate != null) student.setBirthDate(dto.birthDate);
-        if (dto.cpf != null) student.setCpf(dto.cpf);
-        if (dto.phone != null) student.setPhone(dto.phone);
-        if (dto.course != null) student.setCourse(dto.course);
-        if (dto.currentPeriod != null) student.setCurrentPeriod(dto.currentPeriod);
-        if (dto.academicSummary != null) student.setAcademicSummary(dto.academicSummary);
+        student.setFullName(dto.fullName);
+        student.setBirthDate(dto.birthDate);
+        student.setCpf(dto.cpf);
+        student.setPhone(dto.phone);
+        student.setCourse(dto.course);
+        student.setCurrentPeriod(dto.currentPeriod);
+        student.setAcademicSummary(dto.academicSummary);
 
-        // valid user
-        if (dto.userId != null && !dto.userId.equals(student.getUser().getId())) {
-            User user = userRepository.findById(dto.userId)
-                    .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
-            student.setUser(user);
-        }
-
-        // save in data base
         studentRepository.save(student);
-        // response to request
         return toDTO(student);
     }
 
     public void delete(Long id) {
         checkPermission(id);
-        // find user or check if don´t exist
         if (!studentRepository.existsById(id)) {
             throw new EntityNotFoundException("Estudante não encontrado");
         }
-        //delete in data base
         studentRepository.deleteById(id);
-        // do not return cotent
     }
 
     private void checkPermission(Long studentId) {
@@ -158,7 +155,6 @@ public class StudentService {
         applicationRepository.save(application);
     }
 
-    // convert objet to dto to request
     private StudentResponseDTO toDTO(Student s) {
         return new StudentResponseDTO(
                 s.getId(),
@@ -169,6 +165,7 @@ public class StudentService {
                 s.getCourse(),
                 s.getCurrentPeriod(),
                 s.getAcademicSummary(),
+                s.getUser().getId(), // Passando o ID do usuário para o frontend
                 s.getUser().getEmail()
         );
     }

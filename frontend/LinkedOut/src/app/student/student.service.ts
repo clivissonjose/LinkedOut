@@ -12,7 +12,14 @@ export interface Estudante {
   curso: string;
   periodoAtual: number;
   resumoAcademico: string;
-  usuarioId: number;
+  userId: number; // userId é necessário para a lógica no frontend
+  userEmail: string;
+}
+
+// Interface para a lista de usuários que o admin vai ver
+export interface Usuario {
+  id: number;
+  nome: string;
 }
 
 @Injectable({
@@ -21,26 +28,31 @@ export interface Estudante {
 export class StudentService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
-  private apiUrl = 'http://localhost:8080/students';
+  private apiUrl = 'http://localhost:8080';
 
   private getHeaders() {
     const token = this.authService.getToken();
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
+  // Novo método para buscar usuários
+  getUsuarios(): Observable<Usuario[]> {
+    return this.http.get<Usuario[]>(`${this.apiUrl}/users`, { headers: this.getHeaders() });
+  }
+
   getEstudantes(): Observable<Estudante[]> {
-    return this.http.get<Estudante[]>(this.apiUrl, { headers: this.getHeaders() });
+    return this.http.get<Estudante[]>(`${this.apiUrl}/students`, { headers: this.getHeaders() });
   }
 
   createEstudante(estudante: any): Observable<Estudante> {
-    return this.http.post<Estudante>(this.apiUrl, estudante, { headers: this.getHeaders() });
+    return this.http.post<Estudante>(`${this.apiUrl}/students`, estudante, { headers: this.getHeaders() });
   }
 
   updateEstudante(id: number, estudante: any): Observable<Estudante> {
-    return this.http.put<Estudante>(`${this.apiUrl}/${id}`, estudante, { headers: this.getHeaders() });
+    return this.http.put<Estudante>(`${this.apiUrl}/students/${id}`, estudante, { headers: this.getHeaders() });
   }
 
   deleteEstudante(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+    return this.http.delete<void>(`${this.apiUrl}/students/${id}`, { headers: this.getHeaders() });
   }
 }

@@ -11,11 +11,12 @@ public class StudentResponseDTO {
     public String course;
     public Integer currentPeriod;
     public String academicSummary;
+    public Long userId; // <-- CAMPO ADICIONADO AQUI
     public String userEmail;
 
     public StudentResponseDTO(Long id, String fullName, LocalDate birthDate, String cpf,
-                              String phone, String course, int currentPeriod,
-                              String academicSummary, String userEmail) {
+                              String phone, String course, Integer currentPeriod,
+                              String academicSummary, Long userId, String userEmail) {
         this.id = id;
         this.fullName = fullName;
         this.birthDate = birthDate;
@@ -24,6 +25,7 @@ public class StudentResponseDTO {
         this.course = course;
         this.currentPeriod = currentPeriod;
         this.academicSummary = academicSummary;
+        this.userId = userId; // <-- ATRIBUIÇÃO ADICIONADA AQUI
         this.userEmail = userEmail;
     }
 }
