@@ -7,7 +7,9 @@ import { CompanyComponent } from './company/company.component';
 import { authGuard } from './auth/auth.guard';
 import { StudentComponent } from './student/student.component';
 import { VacancyFormComponent } from './vacancy/vacancy-form.component';
-import { VacancyListComponent } from './vacancy/vacancy-list-component';
+import { VacancyListComponent } from './vacancy/vacancy-list.component';
+// ---> NOVO IMPORT <---
+import { ApplicationListComponent } from './company/application-list.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -16,16 +18,19 @@ export const routes: Routes = [
   { path: 'home', component: HomeComponent, canActivate: [authGuard] },
   { path: 'unauthorized', component: UnauthorizedComponent },
 
-  // Rotas de visualização agora são acessíveis para todos os autenticados
   { path: 'empresas', component: CompanyComponent, canActivate: [authGuard] },
   { path: 'vagas', component: VacancyListComponent, canActivate: [authGuard] },
-
-  // Rota para perfil de estudante permanece
   { path: 'estudantes', component: StudentComponent, canActivate: [authGuard] },
 
-  // Rota para publicar vaga continua protegida, pois é uma página de ação
   {
-    path: 'vaga/publicar',
+    path: 'empresa/:id/candidaturas',
+    component: ApplicationListComponent,
+    canActivate: [authGuard],
+    data: { roles: ['ADMIN', 'GESTOR'] }
+  },
+
+  {
+    path: 'empresa/:companyId/vaga/publicar',
     component: VacancyFormComponent,
     canActivate: [authGuard],
     data: { roles: ['ADMIN', 'GESTOR'] }

@@ -1,25 +1,42 @@
 <section>
   <div class="vacancy-list">
     <h2>Vagas Disponíveis</h2>
-
     <div class="filtros">
-      <input type="text" placeholder="Filtrar por título" [(ngModel)]="filtroCurso">
-      <input type="text" placeholder="Filtrar por localização" [(ngModel)]="filtroLocalizacao">
+      <input type="text" placeholder="Filtrar por título" [(ngModel)]="filtroTitulo">
+      <input type="text" placeholder="Filtrar por localização (na descrição)" [(ngModel)]="filtroDescricao">
       <input type="text" placeholder="Filtrar por área" [(ngModel)]="filtroArea">
     </div>
 
+    <div class="gestor-actions" *ngIf="(authService.hasRole('GESTOR') || authService.hasRole('ADMIN')) && managedCompanies.length > 0">
+      <h4>Ações do Gestor</h4>
+      <button *ngFor="let company of managedCompanies" (click)="verCandidaturas(company.id)" class="btn-view-apps">
+        Ver Candidaturas de {{ company.nomeDaEmpresa }}
+      </button>
+    </div>
+
     <div *ngIf="vagasFiltradas.length === 0">
-      Nenhuma vaga disponível no momento.
+      <p>Nenhuma vaga disponível no momento ou com os filtros selecionados.</p>
     </div>
 
     <div *ngFor="let vacancy of vagasFiltradas" class="vacancy-card">
-      <h3>{{ vacancy.titulo }}</h3>
-      <p><strong>Área:</strong> {{ vacancy.area }}</p>
+      <h3>{{ vacancy.titulo }} - Empresa: {{ vacancy.nomeDaEmpresa }}</h3>
+      <p><strong>Área:</strong> {{ vacancy.areaDeAtuacao }}</p>
       <p><strong>Descrição:</strong> {{ vacancy.descricao }}</p>
       <p><strong>Requisitos:</strong> {{ vacancy.requisitos }}</p>
-      <p><strong>Benefícios:</strong> {{ vacancy.beneficios }}</p>
+      <p><strong>Benefícios:</strong> {{ vacancy.beneficios || 'Não informado' }}</p>
       <p><strong>Tipo:</strong> {{ vacancy.tipo }}</p>
-      <p><strong>Data de Término:</strong> {{ vacancy.dataTermino | date }}</p>
+      <p><strong>Data de Término:</strong> {{ vacancy.dataTermino | date: 'dd/MM/yyyy' }}</p>
+
+      <div class="actions">
+        <ng-container *ngIf="authService.hasRole('STUDENT') && !authService.hasRole('ADMIN') && !authService.hasRole('GESTOR') && currentStudentId">
+          <button *ngIf="!jaCandidatado(vacancy.id)" (click)="candidatarSe(vacancy.id)" class="btn-apply">
+            Candidatar-se
+          </button>
+          <button *ngIf="jaCandidatado(vacancy.id)" class="btn-applied" disabled>
+            Inscrito
+          </button>
+        </ng-container>
+      </div>
     </div>
   </div>
 </section>

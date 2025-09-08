@@ -1,5 +1,6 @@
 package com.va2es.backend.services;
 
+import com.va2es.backend.dto.ApplicationForStudentDTO;
 import com.va2es.backend.dto.StudentRequestDTO;
 import com.va2es.backend.dto.StudentResponseDTO;
 import com.va2es.backend.models.Application;
@@ -17,9 +18,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -155,6 +156,14 @@ public class StudentService {
         applicationRepository.save(application);
     }
 
+    public List<ApplicationForStudentDTO> getApplicationsByStudentId(Long studentId) {
+        checkPermission(studentId); // Garante que o estudante só veja suas próprias candidaturas
+        List<Application> applications = applicationRepository.findByStudent_Id(studentId);
+        return applications.stream()
+                .map(this::toApplicationForStudentDTO)
+                .collect(Collectors.toList());
+    }
+
     private StudentResponseDTO toDTO(Student s) {
         return new StudentResponseDTO(
                 s.getId(),
@@ -167,6 +176,16 @@ public class StudentService {
                 s.getAcademicSummary(),
                 s.getUser().getId(), // Passando o ID do usuário para o frontend
                 s.getUser().getEmail()
+        );
+    }
+
+    private ApplicationForStudentDTO toApplicationForStudentDTO(Application app) {
+        return new ApplicationForStudentDTO(
+                app.getId(),
+                app.getVacancy().getId(),
+                app.getVacancy().getTitulo(),
+                app.getVacancy().getCompany().getNomeDaEmpresa(),
+                app.getApplicationDate()
         );
     }
 }

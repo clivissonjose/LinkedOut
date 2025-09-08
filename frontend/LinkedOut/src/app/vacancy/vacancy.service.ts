@@ -14,6 +14,21 @@ export interface VacancyRequest {
   dataTermino: string;
 }
 
+export interface VacancyResponse {
+  id: number;
+  titulo: string;
+  descricao: string;
+  requisitos: string;
+  areaDeAtuacao: string;
+  beneficios: string;
+  tipo: 'ESTAGIO' | 'TRAINEE' | 'EMPREGO';
+  idDaEmpresa: number;
+  nomeDaEmpresa: string;
+  representanteId: number; // ---> CAMPO ADICIONADO <---
+  dataPublicacao: string;
+  dataTermino: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class VacancyService {
   private readonly API = 'http://localhost:8080/vagas';
@@ -23,11 +38,12 @@ export class VacancyService {
   createVacancy(vacancy: VacancyRequest): Observable<any> {
     const token = this.auth.getToken();
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-
     return this.http.post(`${this.API}/create`, vacancy, { headers });
   }
 
-  getAllVacancies(): Observable<VacancyRequest[]> {
-  return this.http.get<VacancyRequest[]>(`${this.API}/list`);
-}
+  getAllVacancies(): Observable<VacancyResponse[]> {
+    const token = this.auth.getToken();
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    return this.http.get<VacancyResponse[]>(`${this.API}/list`, { headers });
+  }
 }

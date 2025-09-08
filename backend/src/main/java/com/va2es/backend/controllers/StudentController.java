@@ -1,5 +1,6 @@
 package com.va2es.backend.controllers;
 
+import com.va2es.backend.dto.ApplicationForStudentDTO;
 import com.va2es.backend.dto.StudentRequestDTO;
 import com.va2es.backend.dto.StudentResponseDTO;
 import com.va2es.backend.services.StudentService;
@@ -50,5 +51,10 @@ public class StudentController {
     public ResponseEntity<Void> applyToVacancy(@PathVariable Long id, @PathVariable Long vacancyId) {
         studentService.applyToVacancy(id, vacancyId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @GetMapping("/{id}/applications")
+    public ResponseEntity<List<ApplicationForStudentDTO>> getStudentApplications(@PathVariable Long id) {
+        return ResponseEntity.ok(studentService.getApplicationsByStudentId(id));
     }
 }

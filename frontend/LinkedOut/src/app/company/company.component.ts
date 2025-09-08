@@ -6,6 +6,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CompanyService, Empresa, Usuario } from './company.service';
 import { AuthService } from '../auth/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-company',
@@ -14,7 +15,7 @@ import { AuthService } from '../auth/auth.service';
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   template: `
     <section>
-      <h2>Empresas</h2>
+      <h2>Empresas Cadastradas</h2>
 
       <div class="filtros">
         <input type="text" [(ngModel)]="filtroNome" placeholder="Buscar por nome" />
@@ -24,14 +25,26 @@ import { AuthService } from '../auth/auth.service';
       <button class="novo-btn" (click)="mostrarFormulario = true" *ngIf="!mostrarFormulario && (authService.hasRole('ADMIN') || authService.hasRole('GESTOR'))">Nova Empresa</button>
 
       <ul>
-        <li *ngFor="let empresa of empresasFiltradas">
-          <div class="info-empresa">
-            <strong>{{ empresa.nomeDaEmpresa }}</strong>
-            <span>CNPJ: {{ empresa.cnpj }}</span>
+        <li *ngFor="let empresa of empresasFiltradas" class="company-card">
+          <div class="company-header">
+            <h3>{{ empresa.nomeDaEmpresa }}</h3>
           </div>
-          <div class="acoes" *ngIf="authService.hasRole('ADMIN') || authService.hasRole('GESTOR')">
-            <button (click)="editarEmpresa(empresa)">Editar</button>
-            <button (click)="excluirEmpresa(empresa.id)">Excluir</button>
+          <div class="company-details">
+            <p><strong>CNPJ:</strong> {{ empresa.cnpj }}</p>
+            <p><strong>Telefone:</strong> {{ empresa.telefone || 'Não informado' }}</p>
+            <p><strong>Área de Atuação:</strong> {{ empresa.areaDeAtuacao }}</p>
+            <p><strong>Representante:</strong> {{ empresa.representanteDaEmpresaNome || 'Não informado' }}</p>
+          </div>
+
+          <div class="acoes">
+            <button *ngIf="authService.getUserId() === empresa.representanteDaEmpresaId" (click)="publicarVaga(empresa.id)" class="btn-publicar">
+              Publicar Vaga
+            </button>
+
+            <ng-container *ngIf="authService.hasRole('ADMIN') || authService.getUserId() === empresa.representanteDaEmpresaId">
+              <button (click)="editarEmpresa(empresa)">Editar</button>
+              <button (click)="excluirEmpresa(empresa.id)">Excluir</button>
+            </ng-container>
           </div>
         </li>
       </ul>
@@ -66,14 +79,14 @@ import { AuthService } from '../auth/auth.service';
 export class CompanyComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private companyService = inject(CompanyService);
-  public authService = inject(AuthService); // Público para uso no template
+  public authService = inject(AuthService);
+  private router = inject(Router);
   private destroy$ = new Subject<void>();
 
   usuarios: Usuario[] = [];
   empresas: Empresa[] = [];
   mostrarFormulario = false;
   empresaEditando: Empresa | null = null;
-
   filtroNome = '';
   filtroArea = '';
 
@@ -87,7 +100,6 @@ export class CompanyComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.carregarEmpresas();
-    // Só carrega a lista de usuários se o usuário logado puder criar/editar empresas
     if (this.authService.hasRole('ADMIN') || this.authService.hasRole('GESTOR')) {
       this.buscarUsuarios();
     }
@@ -167,7 +179,8 @@ export class CompanyComponent implements OnInit, OnDestroy {
       cnpj: empresa.cnpj,
       telefone: empresa.telefone || '',
       areaDeAtuacao: empresa.areaDeAtuacao,
-      representanteId: empresa.representanteDaEmpresa.id
+      // CORREÇÃO 3: Usar a propriedade correta para preencher o formulário
+      representanteId: empresa.representanteDaEmpresaId
     });
   }
 
@@ -186,5 +199,9 @@ export class CompanyComponent implements OnInit, OnDestroy {
           alert('Erro ao excluir empresa!');
         }
       });
+  }
+
+  publicarVaga(companyId: number) {
+    this.router.navigate(['/empresa', companyId, 'vaga', 'publicar']);
   }
 }
