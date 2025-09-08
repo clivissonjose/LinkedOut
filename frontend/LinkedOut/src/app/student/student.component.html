@@ -1,14 +1,14 @@
 <section>
   <h2>Estudantes</h2>
 
-  <ng-container *ngIf="authService.hasRole('ADMIN')">
+  <ng-container *ngIf="authService.hasRole('ADMIN') || authService.hasRole('GESTOR')">
     <div class="filtros">
       <input type="text" [(ngModel)]="filtroCurso" placeholder="Filtrar por curso" />
       <input type="number" [(ngModel)]="periodoMin" placeholder="Período mínimo" />
       <input type="number" [(ngModel)]="periodoMax" placeholder="Período máximo" />
     </div>
 
-    <button class="novo-btn" (click)="abrirFormularioCadastro()" *ngIf="!mostrarFormulario">Cadastrar Novo Estudante</button>
+    <button class="novo-btn" (click)="abrirFormularioCadastro()" *ngIf="!mostrarFormulario && authService.hasRole('ADMIN')">Cadastrar Novo Estudante</button>
 
     <ul *ngIf="estudantesFiltrados.length > 0">
       <li *ngFor="let estudante of estudantesFiltrados">
@@ -16,7 +16,7 @@
           <strong>{{ estudante.nomeCompleto }}</strong>
           <span>{{ estudante.curso }} ({{ estudante.periodoAtual }}º período)</span>
         </div>
-        <div class="acoes">
+        <div class="acoes" *ngIf="authService.hasRole('ADMIN')">
           <button (click)="editarEstudante(estudante)">Editar</button>
           <button (click)="excluirEstudante(estudante.id)">Excluir</button>
         </div>
@@ -26,8 +26,8 @@
     <p *ngIf="estudantes.length === 0">Nenhum estudante cadastrado no sistema.</p>
   </ng-container>
 
-  <ng-container *ngIf="authService.hasRole('STUDENT') && !authService.hasRole('ADMIN')">
-    <div *ngIf="estudantes.length > 0; else noProfileUser">
+  <ng-container *ngIf="!authService.hasRole('ADMIN') && !authService.hasRole('GESTOR')">
+    <div *ngIf="estudantes.length > 0">
       <h3>Seu Perfil de Estudante</h3>
       <ul>
         <li *ngFor="let estudante of estudantes">
@@ -42,14 +42,11 @@
         </li>
       </ul>
     </div>
-  </ng-container>
-
-  <ng-template #noProfileUser>
-    <div *ngIf="authService.hasRole('USER') && !authService.hasRole('ADMIN')">
+    <div *ngIf="estudantes.length === 0 && !mostrarFormulario">
       <p>Você ainda não possui um perfil de estudante.</p>
-      <button class="novo-btn" (click)="abrirFormularioCadastro()" *ngIf="!mostrarFormulario">Criar Meu Perfil</button>
+      <button class="novo-btn" (click)="abrirFormularioCadastro()">Criar Meu Perfil</button>
     </div>
-  </ng-template>
+  </ng-container>
 
   <section *ngIf="mostrarFormulario">
     <h3>{{ estudanteEditando ? 'Editar Perfil' : 'Cadastrar Perfil' }} de Estudante</h3>
@@ -59,7 +56,7 @@
         <label for="usuario">Selecione o Usuário:</label>
         <select id="usuario" formControlName="userId">
           <option [ngValue]="null" disabled>Escolha um usuário</option>
-          <option *ngFor="let user of usuarios" [value]="user.id">{{ user.nome }} ({{ user.id }})</option>
+          <option *ngFor="let user of usuarios" [value]="user.id">{{ user.nome }}</option>
         </select>
       </div>
 

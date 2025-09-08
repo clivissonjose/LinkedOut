@@ -39,11 +39,17 @@ public class StudentService {
     }
 
     public StudentResponseDTO create(StudentRequestDTO dto) {
-        if (studentRepository.existsByCpf(dto.cpf)) {
-            throw new IllegalArgumentException("Já existe um estudante com este CPF.");
+        // ---> NOVA VERIFICAÇÃO ADICIONADA AQUI <---
+        // Verifica se já existe um perfil de estudante para este usuário
+        if (studentRepository.findByUserId(dto.getUserId()).size() > 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Este usuário já possui um perfil de estudante.");
         }
 
-        User user = userRepository.findById(dto.userId)
+        if (studentRepository.existsByCpf(dto.getCpf())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Já existe um estudante com este CPF.");
+        }
+
+        User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
         if (user.getRole() == UserRole.USER) {
@@ -51,14 +57,15 @@ public class StudentService {
             userRepository.save(user);
         }
 
-        Student student = new Student(null,
-                dto.fullName,
-                dto.birthDate,
-                dto.cpf,
-                dto.phone,
-                dto.course,
-                dto.currentPeriod,
-                dto.academicSummary,
+        Student student = new Student(
+                null,
+                dto.getFullName(),
+                dto.getBirthDate(),
+                dto.getCpf(),
+                dto.getPhone(),
+                dto.getCourse(),
+                dto.getCurrentPeriod(),
+                dto.getAcademicSummary(),
                 user);
 
         studentRepository.save(student);
@@ -71,16 +78,19 @@ public class StudentService {
             throw new AccessDeniedException("Usuário não autenticado.");
         }
 
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
+        // Verifica se o usuário é ADMIN ou GESTOR
+        boolean isAdminOrGestor = auth.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN") || role.getAuthority().equals("ROLE_GESTOR"));
 
-        if (isAdmin) {
+        if (isAdminOrGestor) {
+            // Se for ADMIN ou GESTOR, retorna todos os estudantes
             return studentRepository.findAll()
                     .stream()
                     .map(this::toDTO)
                     .collect(Collectors.toList());
         }
 
+        // Para outros usuários (STUDENT, USER), retorna apenas o seu próprio perfil
         Long userId = ((User) auth.getPrincipal()).getId();
         return studentRepository.findByUserId(userId)
                 .stream()
@@ -165,7 +175,7 @@ public class StudentService {
                 s.getCourse(),
                 s.getCurrentPeriod(),
                 s.getAcademicSummary(),
-                s.getUser().getId(), // Passando o ID do usuário para o frontend
+                s.getUser().getId(),
                 s.getUser().getEmail()
         );
     }
