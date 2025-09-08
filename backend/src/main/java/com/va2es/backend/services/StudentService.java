@@ -6,6 +6,7 @@ import com.va2es.backend.models.Application;
 import com.va2es.backend.models.Student;
 import com.va2es.backend.models.User;
 import com.va2es.backend.models.Vacancy;
+import com.va2es.backend.models.enums.UserRole;
 import com.va2es.backend.repositories.ApplicationRepository;
 import com.va2es.backend.repositories.StudentRepository;
 import com.va2es.backend.repositories.UserRepository;
@@ -39,16 +40,19 @@ public class StudentService {
     }
 
     public StudentResponseDTO create(StudentRequestDTO dto) {
-        // valid cpf
         if (studentRepository.existsByCpf(dto.cpf)) {
             throw new IllegalArgumentException("Já existe um estudante com este CPF.");
         }
 
-        // find user and check if don´t exist
         User user = userRepository.findById(dto.userId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
-        // create new student
+        // ---> GATILHO DE PROMOÇÃO DE ROLE <---
+        if (user.getRole() == UserRole.USER) {
+            user.setRole(UserRole.STUDENT);
+            userRepository.save(user);
+        }
+
         Student student = new Student(null,
                 dto.fullName,
                 dto.birthDate,
@@ -58,10 +62,8 @@ public class StudentService {
                 dto.currentPeriod,
                 dto.academicSummary,
                 user);
-        // save strudent
-        studentRepository.save(student);
 
-        //return dto to request
+        studentRepository.save(student);
         return toDTO(student);
     }
 

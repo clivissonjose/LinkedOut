@@ -1,56 +1,47 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpHeaders, HttpClientModule } from '@angular/common/http';
-import { AuthService } from '../auth/auth.service';
 import { FormsModule } from '@angular/forms';
-
-interface Usuario {
-  id: number;
-  nome: string;
-}
-
-interface Empresa {
-  id: number;
-  nomeDaEmpresa: string;
-  cnpj: string;
-  telefone?: string;
-  areaDeAtuacao: string;
-  representanteDaEmpresa: { id: number; nome?: string };
-}
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { CompanyService, Empresa, Usuario } from './company.service';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-company',
   standalone: true,
   styleUrls: ['./company.component.css'],
-  imports: [CommonModule, ReactiveFormsModule, HttpClientModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   template: `
     <section>
       <h2>Empresas</h2>
 
-      <div style="margin: 10px 0;">
+      <div class="filtros">
         <input type="text" [(ngModel)]="filtroNome" placeholder="Buscar por nome" />
         <input type="text" [(ngModel)]="filtroArea" placeholder="Buscar por área de atuação" />
       </div>
 
-      <button (click)="mostrarFormulario = true" *ngIf="!mostrarFormulario">Nova Empresa</button>
+      <button class="novo-btn" (click)="mostrarFormulario = true" *ngIf="!mostrarFormulario && (authService.hasRole('ADMIN') || authService.hasRole('GESTOR'))">Nova Empresa</button>
 
-      <ul *ngIf="empresasFiltradas.length > 0">
+      <ul>
         <li *ngFor="let empresa of empresasFiltradas">
-          <strong>{{ empresa.nomeDaEmpresa }}</strong> - {{ empresa.cnpj }} -
-          Representante: {{ empresa.representanteDaEmpresa.nome || empresa.representanteDaEmpresa.id }}
-
-          <button (click)="editarEmpresa(empresa)">Editar</button>
-          <button (click)="excluirEmpresa(empresa.id)">Excluir</button>
+          <div class="info-empresa">
+            <strong>{{ empresa.nomeDaEmpresa }}</strong>
+            <span>CNPJ: {{ empresa.cnpj }}</span>
+          </div>
+          <div class="acoes" *ngIf="authService.hasRole('ADMIN') || authService.hasRole('GESTOR')">
+            <button (click)="editarEmpresa(empresa)">Editar</button>
+            <button (click)="excluirEmpresa(empresa.id)">Excluir</button>
+          </div>
         </li>
       </ul>
 
-      <p *ngIf="empresasFiltradas.length === 0">Nenhuma empresa encontrada com esses filtros.</p>
+      <p *ngIf="empresas.length > 0 && empresasFiltradas.length === 0">Nenhuma empresa encontrada com os filtros atuais.</p>
+      <p *ngIf="empresas.length === 0">Nenhuma empresa cadastrada no momento.</p>
 
-      <section *ngIf="mostrarFormulario" style="margin-top: 20px;">
+      <section *ngIf="mostrarFormulario">
         <h3>{{ empresaEditando ? 'Editar Empresa' : 'Cadastrar Empresa' }}</h3>
         <form [formGroup]="formEmpresa" (ngSubmit)="onSubmit()">
-
           <input type="text" formControlName="nomeDaEmpresa" placeholder="Nome da Empresa" />
           <input type="text" formControlName="cnpj" placeholder="CNPJ" />
           <input type="text" formControlName="telefone" placeholder="Telefone" />
@@ -61,20 +52,22 @@ interface Empresa {
             <option value="">Selecione um representante</option>
             <option *ngFor="let user of usuarios" [value]="user.id">{{ user.nome }}</option>
           </select>
-
-          <button type="submit" [disabled]="formEmpresa.invalid">
-            {{ empresaEditando ? 'Salvar' : 'Cadastrar' }}
-          </button>
-          <button type="button" (click)="cancelarCadastro()">Cancelar</button>
+          <div class="botoes-formulario">
+            <button type="submit" [disabled]="formEmpresa.invalid">
+              {{ empresaEditando ? 'Salvar' : 'Cadastrar' }}
+            </button>
+            <button type="button" (click)="cancelarCadastro()">Cancelar</button>
+          </div>
         </form>
       </section>
     </section>
   `
 })
-export class CompanyComponent implements OnInit {
+export class CompanyComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
-  private http = inject(HttpClient);
-  private authService = inject(AuthService);
+  private companyService = inject(CompanyService);
+  public authService = inject(AuthService); // Público para uso no template
+  private destroy$ = new Subject<void>();
 
   usuarios: Usuario[] = [];
   empresas: Empresa[] = [];
@@ -93,13 +86,16 @@ export class CompanyComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.buscarUsuarios();
     this.carregarEmpresas();
+    // Só carrega a lista de usuários se o usuário logado puder criar/editar empresas
+    if (this.authService.hasRole('ADMIN') || this.authService.hasRole('GESTOR')) {
+      this.buscarUsuarios();
+    }
   }
 
-  private getHeaders() {
-    const token = this.authService.getToken();
-    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get empresasFiltradas(): Empresa[] {
@@ -111,7 +107,8 @@ export class CompanyComponent implements OnInit {
   }
 
   buscarUsuarios() {
-    this.http.get<Usuario[]>('http://localhost:8080/users', { headers: this.getHeaders() })
+    this.companyService.getUsuarios()
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (dados) => this.usuarios = dados,
         error: (erro) => console.error('Erro ao buscar usuários:', erro)
@@ -119,18 +116,18 @@ export class CompanyComponent implements OnInit {
   }
 
   carregarEmpresas() {
-    this.http.get<Empresa[]>('http://localhost:8080/company/list', { headers: this.getHeaders() })
+    this.companyService.getEmpresas()
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (dados) => this.empresas = dados,
         error: (erro) => console.error('Erro ao carregar empresas:', erro)
       });
   }
 
-  async onSubmit(): Promise<void> {
+  onSubmit(): void {
     if (this.formEmpresa.invalid) return;
 
     const formValue = this.formEmpresa.value;
-
     const empresaPayload = {
       nomeDaEmpresa: formValue.nomeDaEmpresa,
       cnpj: formValue.cnpj,
@@ -139,23 +136,21 @@ export class CompanyComponent implements OnInit {
       representanteDaEmpresaId: formValue.representanteId
     };
 
-    try {
-      if (this.empresaEditando) {
-        await this.http.put(`http://localhost:8080/company/update/${this.empresaEditando.id}`, empresaPayload, { headers: this.getHeaders() }).toPromise();
-        alert('Empresa atualizada com sucesso!');
-      } else {
-        await this.http.post('http://localhost:8080/company/create', empresaPayload, { headers: this.getHeaders() }).toPromise();
-        alert('Empresa cadastrada com sucesso!');
-      }
+    const action = this.empresaEditando
+      ? this.companyService.updateEmpresa(this.empresaEditando.id, empresaPayload)
+      : this.companyService.createEmpresa(empresaPayload);
 
-      this.formEmpresa.reset();
-      this.mostrarFormulario = false;
-      this.empresaEditando = null;
-      this.carregarEmpresas();
-    } catch (error) {
-      console.error('Erro ao salvar empresa:', error);
-      alert('Erro ao salvar empresa!');
-    }
+    action.pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        alert(`Empresa ${this.empresaEditando ? 'atualizada' : 'cadastrada'} com sucesso!`);
+        this.cancelarCadastro();
+        this.carregarEmpresas();
+      },
+      error: (error) => {
+        console.error('Erro ao salvar empresa:', error);
+        alert('Erro ao salvar empresa!');
+      }
+    });
   }
 
   cancelarCadastro() {
@@ -167,7 +162,6 @@ export class CompanyComponent implements OnInit {
   editarEmpresa(empresa: Empresa) {
     this.empresaEditando = empresa;
     this.mostrarFormulario = true;
-
     this.formEmpresa.setValue({
       nomeDaEmpresa: empresa.nomeDaEmpresa,
       cnpj: empresa.cnpj,
@@ -180,7 +174,8 @@ export class CompanyComponent implements OnInit {
   excluirEmpresa(id: number) {
     if (!confirm('Tem certeza que deseja excluir esta empresa?')) return;
 
-    this.http.delete(`http://localhost:8080/company/delete/${id}`, { headers: this.getHeaders() })
+    this.companyService.deleteEmpresa(id)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           alert('Empresa excluída com sucesso!');

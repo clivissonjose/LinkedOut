@@ -9,6 +9,7 @@ import com.va2es.backend.models.Application;
 import com.va2es.backend.models.Company;
 import com.va2es.backend.models.Student;
 import com.va2es.backend.models.User;
+import com.va2es.backend.models.enums.UserRole;
 import com.va2es.backend.repositories.ApplicationRepository;
 import com.va2es.backend.repositories.CompanyRepository;
 import com.va2es.backend.repositories.StudentRepository;
@@ -45,21 +46,27 @@ public class CompanyService {
         this.userRepository = userRepository;
         this.applicationRepository = applicationRepository;
     }
-      public CompanyResponseDTO create(CompanyRequestDTO dto) {
 
+    public CompanyResponseDTO create(CompanyRequestDTO dto) {
         if(empresaRepository.findByCnpj(dto.cnpj).isPresent()){
             throw new IllegalArgumentException("Já existe uma empresa com este CNPJ.");
         }
 
-        User representanteDaEmpresaId = userRepository.findById(dto.representanteDaEmpresaId)
+        User representante = userRepository.findById(dto.representanteDaEmpresaId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário representante não encontrado com id:" + dto.representanteDaEmpresaId));
+
+        // ---> GATILHO DE PROMOÇÃO DE ROLE <---
+        if (representante.getRole() != UserRole.ADMIN) {
+            representante.setRole(UserRole.GESTOR);
+            userRepository.save(representante);
+        }
+
         Company empresa = new Company();
-        checkPermission(empresa.getId());
         empresa.setNomeDaEmpresa(dto.nomeDaEmpresa);
         empresa.setCnpj(dto.cnpj);
         empresa.setTelefone(dto.telefone);
         empresa.setAreaDeAtuacao(dto.areaDeAtuacao);
-        empresa.setRepresentanteDaEmpresa(representanteDaEmpresaId);
+        empresa.setRepresentanteDaEmpresa(representante);
 
         empresaRepository.save(empresa);
         return toDTO(empresa);

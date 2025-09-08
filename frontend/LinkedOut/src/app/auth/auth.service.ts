@@ -10,7 +10,7 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<boolean> {
     try {
-      const response = await fetch(this.apiUrl + "/login", {
+      const response = await fetch(`${this.apiUrl}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -29,10 +29,12 @@ export class AuthService {
 
   async register(newUser: User): Promise<User | null> {
     try {
-      const response = await fetch(this.apiUrl + '/register', {
+      // O campo 'role' é removido aqui para garantir que o backend o defina
+      const { role, ...userPayload } = newUser;
+      const response = await fetch(`${this.apiUrl}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newUser)
+        body: JSON.stringify(userPayload)
       });
       return await response.json();
     } catch (error) {
@@ -53,34 +55,41 @@ export class AuthService {
       const decoded: any = jwtDecode(token);
       const exp = decoded.exp;
 
-      if (!exp) return true; // Se não tiver expiração definida no token, assume-se válido
+      if (!exp) return true;
 
       const now = Math.floor(Date.now() / 1000);
       return exp > now;
     } catch (error) {
       console.warn('Token inválido ou malformado:', error);
-      this.logout(); // Remove token inválido
+      this.logout();
       return false;
     }
   }
 
+  /**
+   * CORREÇÃO CRÍTICA: Verifica se o usuário possui uma role.
+   * O backend envia uma lista de authorities no token (ex: "ROLE_ADMIN").
+   * Esta função agora verifica se a role necessária está presente nessa lista.
+   */
   hasRole(requiredRole: string): boolean {
     const token = this.getToken();
     if (!token) return false;
 
     try {
-      const decoded: any = jwtDecode(token);
-      return decoded.role === requiredRole;
+      const decoded: any = this.decodeToken(token);
+      const authorities: string[] = decoded.authorities || [];
+      // Adicionamos "ROLE_" para corresponder ao padrão do Spring Security no backend
+      return authorities.includes(`ROLE_${requiredRole.toUpperCase()}`);
     } catch {
       return false;
     }
   }
 
+
   getToken(): string | null {
     return localStorage.getItem('token');
   }
 
-  // src/app/auth/auth.service.ts
   getUserId(): number {
     const token = this.getToken();
     if (!token) return 0;
@@ -91,9 +100,7 @@ export class AuthService {
 
   private decodeToken(token: string): any {
     try {
-      const payload = token.split('.')[1];
-      const decoded = atob(payload);
-      return JSON.parse(decoded);
+      return jwtDecode(token);
     } catch (e) {
       console.error('Erro ao decodificar token:', e);
       return null;
