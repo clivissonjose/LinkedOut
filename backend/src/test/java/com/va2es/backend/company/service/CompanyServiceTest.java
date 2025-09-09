@@ -23,7 +23,7 @@ import jakarta.persistence.EntityNotFoundException;
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-class CompanyServiceTest { // 'public' removido daqui
+class CompanyServiceTest {
 
     @Autowired
     private CompanyService companyService;
@@ -31,7 +31,7 @@ class CompanyServiceTest { // 'public' removido daqui
     @Autowired
     private UserRepository userRepository;
 
-    // Método auxiliar para criar e autenticar usuário
+    // Helper method to create and authenticate a user
     private User createAndAuthenticateUser(String email) {
         User user = new User(
                 email,
@@ -49,7 +49,7 @@ class CompanyServiceTest { // 'public' removido daqui
     }
 
     @AfterEach
-    void clearContext() { // 'public' removido daqui
+    void clearContext() {
         SecurityContextHolder.clearContext();
     }
 
@@ -57,10 +57,10 @@ class CompanyServiceTest { // 'public' removido daqui
     void createCompanySuccessfully() {
         User savedUser = createAndAuthenticateUser("user@test.com");
 
+        // Use setters to build the DTO
         CompanyRequestDTO dto = new CompanyRequestDTO();
         dto.setNomeDaEmpresa("Lojas Petronio");
         dto.setTelefone("8199800432");
-        // Corrija esta linha para um formato de CNPJ válido
         dto.setCnpj("49.789.000/0091-65");
         dto.setAreaDeAtuacao("enxovado");
         dto.setRepresentanteDaEmpresaId(savedUser.getId());
@@ -70,9 +70,9 @@ class CompanyServiceTest { // 'public' removido daqui
         assertNotNull(savedCompany.getId());
         assertEquals("Lojas Petronio", savedCompany.getNomeDaEmpresa());
         assertEquals("8199800432", savedCompany.getTelefone());
-        // Atualize a asserção também
         assertEquals("49.789.000/0091-65", savedCompany.getCnpj());
         assertEquals("enxovado", savedCompany.getAreaDeAtuacao());
+        // Corrected to use the existing getter from CompanyResponseDTO
         assertEquals(savedUser.getId(), savedCompany.getIdDoRepresentante());
     }
 
@@ -90,17 +90,15 @@ class CompanyServiceTest { // 'public' removido daqui
         CompanyResponseDTO savedCompany = companyService.create(dto);
         assertNotNull(savedCompany);
 
-        // 1. Pega o ID antes do assertThrows
         final Long companyId = savedCompany.getId();
 
         companyService.deleteById(companyId);
 
-        // 2. Agora a lambda tem apenas uma chamada que pode falhar
         assertThrows(EntityNotFoundException.class, () -> companyService.findById(companyId));
     }
 
     @Test
-    void updateCompanySuccessfully() { // 'public' removido daqui
+    void updateCompanySuccessfully() {
         User savedUser = createAndAuthenticateUser("user@test2.com");
 
         CompanyRequestDTO dto = new CompanyRequestDTO();
@@ -114,6 +112,7 @@ class CompanyServiceTest { // 'public' removido daqui
 
         assertNotNull(savedCompany);
 
+        // Use setters to update the DTO for the update call
         dto.setNomeDaEmpresa("Lojas Updated");
         dto.setTelefone("00000000000");
 
