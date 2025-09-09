@@ -1,25 +1,17 @@
 package com.va2es.backend.vacancy.service;
 
 import com.va2es.backend.dto.VacancyRequestDTO;
-import com.va2es.backend.dto.VacancyResponseDTO;
 import com.va2es.backend.models.Company;
 import com.va2es.backend.models.Vacancy;
-import com.va2es.backend.models.enums.VacancyType;
 import com.va2es.backend.repositories.CompanyRepository;
 import com.va2es.backend.repositories.VacancyRepository;
 import com.va2es.backend.services.VacancyService;
-
 import jakarta.persistence.EntityNotFoundException;
-
-import org.checkerframework.checker.units.qual.s;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-
-import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -90,11 +82,6 @@ class VacancyServiceTest {
 
         when(vacancyRepository.findById(vacancyId)).thenReturn(Optional.of(vaga));
 
-        // spy to bypass permission check if necessary
-       // vacancyService = spy(vacancyService);
-       // doNothing().when(vacancyService).checkPermission(anyLong());
-
-        // when
         vacancyService.delete(vacancyId);
 
         // then
