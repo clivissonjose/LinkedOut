@@ -3,101 +3,107 @@ package com.va2es.backend.dto;
 import java.time.LocalDate;
 
 public class StudentResponseDTO {
-    private Long id;
-    private String fullName;
-    private LocalDate birthDate;
-    private String cpf;
-    private String phone;
-    private String course;
-    private Integer currentPeriod;
-    private String academicSummary;
-    private String userEmail;
+    private final Long id;
+    private final String fullName;
+    private final LocalDate birthDate;
+    private final String cpf;
+    private final String phone;
+    private final String course;
+    private final Integer currentPeriod;
+    private final String academicSummary;
+    private final String userEmail;
 
-    // Construtor
-    public StudentResponseDTO(Long id, String fullName, LocalDate birthDate, String cpf,
-                              String phone, String course, int currentPeriod,
-                              String academicSummary, String userEmail) {
-        this.id = id;
-        this.fullName = fullName;
-        this.birthDate = birthDate;
-        this.cpf = cpf;
-        this.phone = phone;
-        this.course = course;
-        this.currentPeriod = currentPeriod;
-        this.academicSummary = academicSummary;
-        this.userEmail = userEmail;
+    // Construtor é privado e só pode ser chamado pelo Builder
+    private StudentResponseDTO(Builder builder) {
+        this.id = builder.id;
+        this.fullName = builder.fullName;
+        this.birthDate = builder.birthDate;
+        this.cpf = builder.cpf;
+        this.phone = builder.phone;
+        this.course = builder.course;
+        this.currentPeriod = builder.currentPeriod;
+        this.academicSummary = builder.academicSummary;
+        this.userEmail = builder.userEmail;
     }
 
-    // Getters e Setters
-    public Long getId() {
-        return id;
+    // Apenas Getters são públicos para manter o objeto imutável após a criação
+    public Long getId() { return id; }
+    public String getFullName() { return fullName; }
+    public LocalDate getBirthDate() { return birthDate; }
+    public String getCpf() { return cpf; }
+    public String getPhone() { return phone; }
+    public String getCourse() { return course; }
+    public Integer getCurrentPeriod() { return currentPeriod; }
+    public String getAcademicSummary() { return academicSummary; }
+    public String getUserEmail() { return userEmail; }
+
+    // Método estático para obter uma nova instância do Builder
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    // Classe interna estática Builder
+    public static final class Builder {
+        private Long id;
+        private String fullName;
+        private LocalDate birthDate;
+        private String cpf;
+        private String phone;
+        private String course;
+        private Integer currentPeriod;
+        private String academicSummary;
+        private String userEmail;
 
-    public String getFullName() {
-        return fullName;
-    }
+        private Builder() {}
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
+        public Builder id(Long id) {
+            this.id = id;
+            return this;
+        }
 
-    public LocalDate getBirthDate() {
-        return birthDate;
-    }
+        public Builder fullName(String fullName) {
+            this.fullName = fullName;
+            return this;
+        }
 
-    public void setBirthDate(LocalDate birthDate) {
-        this.birthDate = birthDate;
-    }
+        public Builder birthDate(LocalDate birthDate) {
+            this.birthDate = birthDate;
+            return this;
+        }
 
-    public String getCpf() {
-        return cpf;
-    }
+        public Builder cpf(String cpf) {
+            this.cpf = cpf;
+            return this;
+        }
 
-    public void setCpf(String cpf) {
-        this.cpf = cpf;
-    }
+        public Builder phone(String phone) {
+            this.phone = phone;
+            return this;
+        }
 
-    public String getPhone() {
-        return phone;
-    }
+        public Builder course(String course) {
+            this.course = course;
+            return this;
+        }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
+        public Builder currentPeriod(Integer currentPeriod) {
+            this.currentPeriod = currentPeriod;
+            return this;
+        }
 
-    public String getCourse() {
-        return course;
-    }
+        public Builder academicSummary(String academicSummary) {
+            this.academicSummary = academicSummary;
+            return this;
+        }
 
-    public void setCourse(String course) {
-        this.course = course;
-    }
+        public Builder userEmail(String userEmail) {
+            this.userEmail = userEmail;
+            return this;
+        }
 
-    public Integer getCurrentPeriod() {
-        return currentPeriod;
-    }
-
-    public void setCurrentPeriod(Integer currentPeriod) {
-        this.currentPeriod = currentPeriod;
-    }
-
-    public String getAcademicSummary() {
-        return academicSummary;
-    }
-
-    public void setAcademicSummary(String academicSummary) {
-        this.academicSummary = academicSummary;
-    }
-
-    public String getUserEmail() {
-        return userEmail;
-    }
-
-    public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail;
+        // Método final que constrói e retorna o objeto StudentResponseDTO
+        public StudentResponseDTO build() {
+            return new StudentResponseDTO(this);
+        }
     }
 }

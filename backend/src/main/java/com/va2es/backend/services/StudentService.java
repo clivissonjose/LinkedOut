@@ -154,17 +154,17 @@ public class StudentService {
 
     // convert objet to dto to request
     private StudentResponseDTO toDTO(Student s) {
-        return new StudentResponseDTO(
-                s.getId(),
-                s.getFullName(),
-                s.getBirthDate(),
-                s.getCpf(),
-                s.getPhone(),
-                s.getCourse(),
-                s.getCurrentPeriod(),
-                s.getAcademicSummary(),
-                s.getUser().getEmail()
-        );
+        return StudentResponseDTO.builder()
+                .id(s.getId())
+                .fullName(s.getFullName())
+                .birthDate(s.getBirthDate())
+                .cpf(s.getCpf())
+                .phone(s.getPhone())
+                .course(s.getCourse())
+                .currentPeriod(s.getCurrentPeriod())
+                .academicSummary(s.getAcademicSummary())
+                .userEmail(s.getUser().getEmail())
+                .build();
     }
 
     public List<Application> getApplicationsByStudentId(Long studentId) {
