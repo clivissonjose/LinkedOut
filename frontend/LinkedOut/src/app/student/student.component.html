@@ -1,27 +1,66 @@
 <section>
   <h2>Estudantes</h2>
 
-  <div style="margin: 10px 0;">
-    <input type="text" [(ngModel)]="filtroCurso" placeholder="Filtrar por curso" />
-    <input type="number" [(ngModel)]="periodoMin" placeholder="Período mínimo" />
-    <input type="number" [(ngModel)]="periodoMax" placeholder="Período máximo" />
-  </div>
+  <ng-container *ngIf="authService.hasRole('ADMIN') || authService.hasRole('GESTOR')">
+    <div class="filtros">
+      <input type="text" [(ngModel)]="filtroCurso" placeholder="Filtrar por curso" />
+      <input type="number" [(ngModel)]="periodoMin" placeholder="Período mínimo" />
+      <input type="number" [(ngModel)]="periodoMax" placeholder="Período máximo" />
+    </div>
 
-  <button (click)="mostrarFormulario = true" *ngIf="!mostrarFormulario">Novo Estudante</button>
+    <button class="novo-btn" (click)="abrirFormularioCadastro()" *ngIf="!mostrarFormulario && authService.hasRole('ADMIN')">Cadastrar Novo Estudante</button>
 
-  <ul *ngIf="estudantes.length > 0">
-    <li *ngFor="let estudante of estudantesFiltrados">
-    <strong>{{ estudante.nomeCompleto }}</strong> - {{ estudante.curso }} ({{ estudante.periodoAtual }}º período)
-      <button (click)="editarEstudante(estudante)">Editar</button>
-      <button (click)="excluirEstudante(estudante.id)">Excluir</button>
-    </li>
-  </ul>
+    <ul *ngIf="estudantesFiltrados.length > 0">
+      <li *ngFor="let estudante of estudantesFiltrados">
+        <div class="info-estudante">
+          <strong>{{ estudante.nomeCompleto }}</strong>
+          <span>{{ estudante.curso }} ({{ estudante.periodoAtual }}º período)</span>
+        </div>
+        <div class="acoes" *ngIf="authService.hasRole('ADMIN')">
+          <button (click)="editarEstudante(estudante)">Editar</button>
+          <button (click)="excluirEstudante(estudante.id)">Excluir</button>
+        </div>
+      </li>
+    </ul>
 
-  <p *ngIf="estudantes.length === 0">Nenhum estudante cadastrado.</p>
+    <p *ngIf="estudantes.length > 0 && estudantesFiltrados.length === 0">Nenhum estudante encontrado com os filtros.</p>
+    <p *ngIf="estudantes.length === 0">Nenhum estudante cadastrado no sistema.</p>
+  </ng-container>
+
+  <ng-container *ngIf="!authService.hasRole('ADMIN') && !authService.hasRole('GESTOR')">
+    <div *ngIf="estudantes.length > 0">
+      <h3>Seu Perfil de Estudante</h3>
+      <ul>
+        <li *ngFor="let estudante of estudantes">
+          <div class="info-estudante">
+            <strong>{{ estudante.nomeCompleto }}</strong>
+            <span>{{ estudante.curso }} ({{ estudante.periodoAtual }}º período)</span>
+          </div>
+          <div class="acoes">
+            <button (click)="editarEstudante(estudante)">Editar Meu Perfil</button>
+            <button (click)="excluirEstudante(estudante.id)">Excluir Meu Perfil</button>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div *ngIf="estudantes.length === 0 && !mostrarFormulario">
+      <p>Você ainda não possui um perfil de estudante.</p>
+      <button class="novo-btn" (click)="abrirFormularioCadastro()">Criar Meu Perfil</button>
+    </div>
+  </ng-container>
 
   <section *ngIf="mostrarFormulario">
-    <h3>{{ estudanteEditando ? 'Editar' : 'Cadastrar' }} Estudante</h3>
+    <h3>{{ estudanteEditando ? 'Editar Perfil' : 'Cadastrar Perfil' }} de Estudante</h3>
     <form [formGroup]="formEstudante" (ngSubmit)="onSubmit()">
+
+      <div *ngIf="authService.hasRole('ADMIN') && !estudanteEditando">
+        <label for="usuario">Selecione o Usuário:</label>
+        <select id="usuario" formControlName="userId" required>
+          <option [ngValue]="null" disabled>Escolha um usuário</option>
+          <option *ngFor="let user of usuarios" [value]="user.id">{{ user.nome }} ({{user.id}})</option>
+        </select>
+      </div>
+
       <input type="text" formControlName="nomeCompleto" placeholder="Nome Completo" />
       <input type="date" formControlName="dataNascimento" />
       <input type="text" formControlName="cpf" placeholder="CPF" />
@@ -30,13 +69,12 @@
       <input type="number" formControlName="periodoAtual" placeholder="Período Atual" />
       <textarea formControlName="resumoAcademico" placeholder="Resumo Acadêmico"></textarea>
 
-  <div class="botoes-formulario">
-    <button type="submit" [disabled]="formEstudante.invalid">
-      {{ estudanteEditando ? 'Salvar' : 'Cadastrar' }}
-    </button>
-    <button type="button" (click)="cancelarCadastro()">Cancelar</button>
-  </div>
-
+      <div class="botoes-formulario">
+        <button type="submit" [disabled]="formEstudante.invalid">
+          {{ estudanteEditando ? 'Salvar Alterações' : 'Cadastrar Perfil' }}
+        </button>
+        <button type="button" (click)="cancelarCadastro()">Cancelar</button>
+      </div>
     </form>
   </section>
 </section>

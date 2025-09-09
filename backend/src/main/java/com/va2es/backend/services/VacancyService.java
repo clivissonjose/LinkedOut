@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class VacancyService {
+    // ... (injeções e outros métodos)
     private final VacancyRepository vacancyRepository;
     private final CompanyRepository companyRepository;
 
@@ -28,6 +29,24 @@ public class VacancyService {
         this.companyRepository = companyRepository;
     }
 
+    private VacancyResponseDTO toDTO(Vacancy vaga){
+        return new VacancyResponseDTO(
+                vaga.getId(),
+                vaga.getTitulo(),
+                vaga.getDescricao(),
+                vaga.getRequisitos(),
+                vaga.getArea(),
+                vaga.getBeneficios(),
+                vaga.getTipo(),
+                vaga.getCompany().getId(),
+                vaga.getCompany().getNomeDaEmpresa(),
+
+                vaga.getCompany().getRepresentanteDaEmpresa().getId(),
+                vaga.getDataPublicacao(),
+                vaga.getDataLimite()
+        );
+    }
+    // ... (O restante da classe continua igual)
     public VacancyResponseDTO createVacancy(VacancyRequestDTO vacancyRequestDTO) {
         Company empresa = companyRepository.findById(vacancyRequestDTO.getCompanyId()).
                 orElseThrow(()-> new EntityNotFoundException("Empresa não encontrada"));
@@ -98,24 +117,6 @@ public class VacancyService {
             throw new AccessDeniedException("Acesso negado: apenas o representante da empresa pode executar esta ação.");
         }
     }
-
-    private VacancyResponseDTO toDTO(Vacancy vaga){
-        return new VacancyResponseDTO(
-                vaga.getId(),
-                vaga.getTitulo(),
-                vaga.getDescricao(),
-                vaga.getRequisitos(),
-                vaga.getArea(),
-                vaga.getBeneficios(),
-                vaga.getTipo(),
-                vaga.getCompany().getId(),
-                vaga.getCompany().getNomeDaEmpresa(),
-                vaga.getDataPublicacao(),
-                vaga.getDataLimite()
-        );
-    }
-
-    // Pega todas as vagas de acordo com a area e a tipo da vaga
     public List<VacancyResponseDTO> filterByAreaAndTipo(String area, VacancyType vacancyType){
         List<Vacancy> filteredVacancies = vacancyRepository.findByAreaAndTipo(area, vacancyType);
         return filteredVacancies.stream()
@@ -123,7 +124,6 @@ public class VacancyService {
                 .collect(Collectors.toList());
     }
 
-    // Pega as vagas que vão se encerrar durante um periodo
     public List<VacancyResponseDTO> filterByAreaAndTipoAndPeriodo(String area, VacancyType vacancyType, LocalDate inicio, LocalDate fim){
         List<Vacancy> filteredVacancies = vacancyRepository.findByAreaAndTipoAndDataLimiteBetween(area, vacancyType, inicio, fim);
         return filteredVacancies.stream()
