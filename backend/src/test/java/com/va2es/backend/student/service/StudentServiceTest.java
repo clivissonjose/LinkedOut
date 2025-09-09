@@ -23,7 +23,6 @@ import com.va2es.backend.services.StudentService;
 
 import jakarta.persistence.EntityNotFoundException;
 
-
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -40,7 +39,6 @@ public class StudentServiceTest {
     @Autowired
     private StudentService studentService;
 
-
     @Test
     public void deveCriarEstudanteComSucesso() {
         // cria e salva o usuário
@@ -52,12 +50,12 @@ public class StudentServiceTest {
         );
         User savedUser = userRepository.save(user);
 
-        // cria DTO do estudante - USANDO SETTERS
+        // cria DTO do estudante
         StudentRequestDTO dto = new StudentRequestDTO();
         dto.setFullName("João Silva");
         dto.setBirthDate(LocalDate.of(2000, 1, 1));
         dto.setCpf("12345678900");
-        dto.setPhone("999999999");
+        dto.setPhone("9999999999");
         dto.setCourse("Ciência da Computação");
         dto.setCurrentPeriod(4);
         dto.setAcademicSummary("Bom aluno");
@@ -66,7 +64,7 @@ public class StudentServiceTest {
         // executa service
         StudentResponseDTO response = studentService.create(dto);
 
-        // validações - USANDO GETTERS
+        // validações
         assertNotNull(response);
         assertEquals("João Silva", response.getFullName());
         assertEquals("12345678900", response.getCpf());
@@ -81,7 +79,7 @@ public class StudentServiceTest {
         dto.setFullName("Carlos Souza");
         dto.setBirthDate(LocalDate.of(2002, 3, 3));
         dto.setCpf("98765432100");
-        dto.setPhone("666666666");
+        dto.setPhone("6666666668");
         dto.setCourse("Medicina");
         dto.setCurrentPeriod(1);
         dto.setAcademicSummary("Resumo");
@@ -90,14 +88,13 @@ public class StudentServiceTest {
         assertThrows(EntityNotFoundException.class, () -> studentService.create(dto));
     }
 
-
     @Test
     public void deletarEstudanteComSucesso() {
         // cria e salva o usuário
         User user = new User(
                 "user@test2.com",
                 "password123",
-                UserRole.ADMIN, // admin consegue deletar qualquer estudante
+                UserRole.ADMIN,
                 "João de Teste"
         );
         User savedUser = userRepository.save(user);
@@ -107,7 +104,7 @@ public class StudentServiceTest {
         dto.setFullName("João Silva");
         dto.setBirthDate(LocalDate.of(2000, 1, 1));
         dto.setCpf("12345678880");
-        dto.setPhone("999999999");
+        dto.setPhone("9999999999");
         dto.setCourse("Ciência da Computação");
         dto.setCurrentPeriod(4);
         dto.setAcademicSummary("Bom aluno");
@@ -124,7 +121,6 @@ public class StudentServiceTest {
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         String cpf = response.getCpf();
-
         assertTrue(studentRepository.existsByCpf(cpf));
 
         // deleta o estudante
@@ -132,7 +128,6 @@ public class StudentServiceTest {
 
         // verifica se foi deletado
         assertTrue(!studentRepository.existsByCpf(cpf));
-
     }
 
     @Test
@@ -151,7 +146,7 @@ public class StudentServiceTest {
         dto.setFullName("João Silva");
         dto.setBirthDate(LocalDate.of(2000, 1, 1));
         dto.setCpf("12345600880");
-        dto.setPhone("999999999");
+        dto.setPhone("9999999999");
         dto.setCourse("Ciência da Computação");
         dto.setCurrentPeriod(4);
         dto.setAcademicSummary("Bom aluno");
@@ -168,14 +163,13 @@ public class StudentServiceTest {
         assertEquals(response.getId(), found.getId());
         assertEquals(response.getFullName(), found.getFullName());
         assertEquals(response.getCpf(), found.getCpf());
-
     }
 
-    @Test // <<-- Faltava esta anotação
+    @Test
     public void atualizarEstudanteComSucesso() {
         // cria e salva o usuário
         User user = new User(
-                "user@test7.com", // Email diferente para evitar conflito
+                "user@test7.com",
                 "password123",
                 UserRole.ADMIN,
                 "João de Teste"
@@ -187,7 +181,7 @@ public class StudentServiceTest {
         dto.setFullName("João Silva");
         dto.setBirthDate(LocalDate.of(2000, 1, 1));
         dto.setCpf("12345678955");
-        dto.setPhone("999999999");
+        dto.setPhone("9999999990");
         dto.setCourse("Ciência da Computação");
         dto.setCurrentPeriod(4);
         dto.setAcademicSummary("Bom aluno");
@@ -229,7 +223,7 @@ public class StudentServiceTest {
         dto.setFullName("Maria Silva");
         dto.setBirthDate(LocalDate.of(2001, 2, 2));
         dto.setCpf("12312312399");
-        dto.setPhone("999888777");
+        dto.setPhone("9998887077");
         dto.setCourse("Engenharia");
         dto.setCurrentPeriod(3);
         dto.setAcademicSummary("Resumo");
@@ -237,14 +231,11 @@ public class StudentServiceTest {
 
         StudentResponseDTO response = studentService.create(dto);
 
-        // NÃO setamos o SecurityContextHolder aqui → simula usuário não autenticado
+        // 🔑 NÃO setamos o SecurityContextHolder aqui → simula usuário não autenticado
 
-        // espera AccessDeniedException
         assertThrows(
                 org.springframework.security.access.AccessDeniedException.class,
                 () -> studentService.delete(response.getId())
         );
     }
-
-
 }
