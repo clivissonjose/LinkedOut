@@ -29,6 +29,8 @@
 	<properties>
 		<java.version>21</java.version>
 		<sonar.organization>grupo-rgnvhc</sonar.organization>
+		<sonar.projectKey>grupo-RGNVHC_backend</sonar.projectKey>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 	</properties>
 	<dependencies>
 		<dependency>
