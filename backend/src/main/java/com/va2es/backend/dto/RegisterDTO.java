@@ -1,16 +1,20 @@
 package com.va2es.backend.dto;
 
+import com.va2es.backend.models.enums.UserRole;
+
 public class RegisterDTO {
     private String email;
     private String password;
+    private UserRole role;
     private String nome;
 
     public RegisterDTO() {
     }
 
-    public RegisterDTO(String email, String password, String nome) {
+    public RegisterDTO(String email, String password, UserRole role, String nome) {
         this.email = email;
         this.password = password;
+        this.role = role;
         this.nome = nome;
     }
 
@@ -28,6 +32,14 @@ public class RegisterDTO {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
     }
 
     public String getNome() {

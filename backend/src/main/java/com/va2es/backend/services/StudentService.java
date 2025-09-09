@@ -1,13 +1,11 @@
 package com.va2es.backend.services;
 
-import com.va2es.backend.dto.ApplicationForStudentDTO;
 import com.va2es.backend.dto.StudentRequestDTO;
 import com.va2es.backend.dto.StudentResponseDTO;
 import com.va2es.backend.models.Application;
 import com.va2es.backend.models.Student;
 import com.va2es.backend.models.User;
 import com.va2es.backend.models.Vacancy;
-import com.va2es.backend.models.enums.UserRole;
 import com.va2es.backend.repositories.ApplicationRepository;
 import com.va2es.backend.repositories.StudentRepository;
 import com.va2es.backend.repositories.UserRepository;
@@ -15,18 +13,16 @@ import com.va2es.backend.repositories.VacancyRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // Importação necessária
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
 
+    private static final String STUDENT_NOT_FOUND_MESSAGE = "Estudante não encontrado";
     private final VacancyRepository vacancyRepository;
     private final ApplicationRepository applicationRepository;
     private final StudentRepository studentRepository;
@@ -39,26 +35,18 @@ public class StudentService {
         this.applicationRepository = applicationRepository;
     }
 
-    @Transactional
     public StudentResponseDTO create(StudentRequestDTO dto) {
-        if (studentRepository.findByUserId(dto.getUserId()).size() > 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Este usuário já possui um perfil de estudante.");
-        }
-
+        // valid cpf - Antes: dto.cpf | Agora: dto.getCpf()
         if (studentRepository.existsByCpf(dto.getCpf())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Já existe um estudante com este CPF.");
+            throw new IllegalArgumentException("Já existe um estudante com este CPF.");
         }
 
+        // find user and check if don´t exist - Antes: dto.userId | Agora: dto.getUserId()
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
-        if (user.getRole() == UserRole.USER) {
-            user.setRole(UserRole.STUDENT);
-            userRepository.save(user);
-        }
-
-        Student student = new Student(
-                null,
+        // create new student - Usando getters para todos os campos do DTO
+        Student student = new Student(null,
                 dto.getFullName(),
                 dto.getBirthDate(),
                 dto.getCpf(),
@@ -67,73 +55,65 @@ public class StudentService {
                 dto.getCurrentPeriod(),
                 dto.getAcademicSummary(),
                 user);
-
+        // save strudent
         studentRepository.save(student);
+
+        //return dto to request
         return toDTO(student);
     }
 
     public List<StudentResponseDTO> findAll() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null) {
-            throw new AccessDeniedException("Usuário não autenticado.");
-        }
-
-        boolean isAdminOrGestor = auth.getAuthorities().stream()
-                .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN") || role.getAuthority().equals("ROLE_GESTOR"));
-
-        if (isAdminOrGestor) {
-            return studentRepository.findAll()
-                    .stream()
-                    .map(this::toDTO)
-                    .collect(Collectors.toList());
-        }
-
-        Long userId = ((User) auth.getPrincipal()).getId();
-        return studentRepository.findByUserId(userId)
+        // all user in data base
+        return studentRepository.findAll()
                 .stream()
                 .map(this::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public StudentResponseDTO findById(Long id) {
+        // find user and check if don´t exist
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Estudante não foi encontrado"));
         return toDTO(student);
     }
 
-    @Transactional
     public StudentResponseDTO update(Long id, StudentRequestDTO dto) {
         checkPermission(id);
+        // find user and check if don´t exist
         Student student = studentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Estudante não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException(STUDENT_NOT_FOUND_MESSAGE));
 
-        student.setFullName(dto.fullName);
-        student.setBirthDate(dto.birthDate);
-        student.setCpf(dto.cpf);
-        student.setPhone(dto.phone);
-        student.setCourse(dto.course);
-        student.setCurrentPeriod(dto.currentPeriod);
-        student.setAcademicSummary(dto.academicSummary);
+        // update all filds one by one - Usando getters para todos os campos do DTO
+        if (dto.getFullName() != null) student.setFullName(dto.getFullName());
+        if (dto.getBirthDate() != null) student.setBirthDate(dto.getBirthDate());
+        if (dto.getCpf() != null) student.setCpf(dto.getCpf());
+        if (dto.getPhone() != null) student.setPhone(dto.getPhone());
+        if (dto.getCourse() != null) student.setCourse(dto.getCourse());
+        if (dto.getCurrentPeriod() != null) student.setCurrentPeriod(dto.getCurrentPeriod());
+        if (dto.getAcademicSummary() != null) student.setAcademicSummary(dto.getAcademicSummary());
 
+        // valid user
+        if (dto.getUserId() != null && !dto.getUserId().equals(student.getUser().getId())) {
+            User user = userRepository.findById(dto.getUserId())
+                    .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+            student.setUser(user);
+        }
+
+        // save in data base
         studentRepository.save(student);
+        // response to request
         return toDTO(student);
     }
 
-    @Transactional // Garante que a exclusão e a atualização do usuário ocorram juntas
     public void delete(Long id) {
         checkPermission(id);
-        Student student = studentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Estudante não encontrado"));
-
-        User user = student.getUser();
-        studentRepository.delete(student);
-
-        // ---> LÓGICA DE REMOÇÃO DE ROLE <---
-        // Se o usuário era um estudante (e não é também um gestor ou admin), reverte para USER
-        if (user.getRole() == UserRole.STUDENT) {
-            user.setRole(UserRole.USER);
-            userRepository.save(user);
+        // find user or check if don´t exist
+        if (!studentRepository.existsById(id)) {
+            throw new EntityNotFoundException(STUDENT_NOT_FOUND_MESSAGE);
         }
+        //delete in data base
+        studentRepository.deleteById(id);
+        // do not return cotent
     }
 
     private void checkPermission(Long studentId) {
@@ -149,16 +129,15 @@ public class StudentService {
         Long userId = ((User) auth.getPrincipal()).getId();
 
         Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new EntityNotFoundException("Estudante não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException(STUDENT_NOT_FOUND_MESSAGE));
         if (!student.getUser().getId().equals(userId)) {
             throw new AccessDeniedException("Acesso negado: você só pode acessar o seu próprio cadastro.");
         }
     }
 
-    @Transactional
     public void applyToVacancy(Long studentId, Long vacancyId) {
         Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new EntityNotFoundException("Estudante não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException(STUDENT_NOT_FOUND_MESSAGE));
 
         checkPermission(studentId);
 
@@ -173,36 +152,23 @@ public class StudentService {
         applicationRepository.save(application);
     }
 
-    public List<ApplicationForStudentDTO> getApplicationsByStudentId(Long studentId) {
-        checkPermission(studentId);
-        List<Application> applications = applicationRepository.findByStudent_Id(studentId);
-        return applications.stream()
-                .map(this::toApplicationForStudentDTO)
-                .collect(Collectors.toList());
-    }
-
+    // convert objet to dto to request
     private StudentResponseDTO toDTO(Student s) {
-        return new StudentResponseDTO(
-                s.getId(),
-                s.getFullName(),
-                s.getBirthDate(),
-                s.getCpf(),
-                s.getPhone(),
-                s.getCourse(),
-                s.getCurrentPeriod(),
-                s.getAcademicSummary(),
-                s.getUser().getId(),
-                s.getUser().getEmail()
-        );
+        return StudentResponseDTO.builder()
+                .id(s.getId())
+                .fullName(s.getFullName())
+                .birthDate(s.getBirthDate())
+                .cpf(s.getCpf())
+                .phone(s.getPhone())
+                .course(s.getCourse())
+                .currentPeriod(s.getCurrentPeriod())
+                .academicSummary(s.getAcademicSummary())
+                .userEmail(s.getUser().getEmail())
+                .build();
     }
 
-    private ApplicationForStudentDTO toApplicationForStudentDTO(Application app) {
-        return new ApplicationForStudentDTO(
-                app.getId(),
-                app.getVacancy().getId(),
-                app.getVacancy().getTitulo(),
-                app.getVacancy().getCompany().getNomeDaEmpresa(),
-                app.getApplicationDate()
-        );
+    public List<Application> getApplicationsByStudentId(Long studentId) {
+        // Implement logic to fetch applications by studentId, for example:
+        return applicationRepository.findByStudentId(studentId);
     }
 }

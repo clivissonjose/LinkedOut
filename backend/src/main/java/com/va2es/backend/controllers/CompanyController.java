@@ -1,6 +1,9 @@
 package com.va2es.backend.controllers;
 
-import com.va2es.backend.dto.*;
+import com.va2es.backend.dto.ApplicationForCompanyDTO;
+import com.va2es.backend.dto.CompanyRequestDTO;
+import com.va2es.backend.dto.CompanyResponseDTO;
+import com.va2es.backend.dto.StudentPublicDTO;
 import com.va2es.backend.services.CompanyService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -70,8 +73,8 @@ public class CompanyController {
     }
 
     @GetMapping("/{id}/applications")
-    public ResponseEntity<List<VacancyWithApplicantsDTO>> getCompanyApplications(@PathVariable Long id) {
-        List<VacancyWithApplicantsDTO> applications = empresaService.getApplicationsForCompany(id);
+    public ResponseEntity<List<ApplicationForCompanyDTO>> getCompanyApplications(@PathVariable Long id) {
+        List<ApplicationForCompanyDTO> applications = empresaService.getApplicationsForCompany(id);
         return ResponseEntity.ok(applications);
     }
 }

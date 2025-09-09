@@ -58,7 +58,9 @@ public class VacancyController {
     public ResponseEntity<List<VacancyResponseDTO>> filterVacancies(@RequestParam String area, @RequestParam VacancyType vacancyType,
                                                                     @RequestParam(required = false) LocalDate inicio, @RequestParam(required = false) LocalDate fim) {
 
-        logger.info("Filtrando vagas com área: {}, tipo: {}, início: {}, fim: {}", area, vacancyType, inicio, fim);
+        String sanitizedArea = area.replaceAll("[\r\n]", "_");
+
+        logger.info("Filtrando vagas com área: {}, tipo: {}, início: {}, fim: {}", sanitizedArea, vacancyType, inicio, fim);
 
         if (inicio != null && fim != null) {
             return ResponseEntity.ok(vacancyService.filterByAreaAndTipoAndPeriodo(area, vacancyType, inicio, fim));

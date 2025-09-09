@@ -8,8 +8,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Entity
 @Table(name = "users")
@@ -40,21 +38,11 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        switch (this.role) {
-            case ADMIN:
-                return Stream.of("ROLE_ADMIN", "ROLE_GESTOR", "ROLE_STUDENT", "ROLE_USER")
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
-            case GESTOR:
-                return Stream.of("ROLE_GESTOR", "ROLE_USER")
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
-            case STUDENT:
-                return Stream.of("ROLE_STUDENT", "ROLE_USER")
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
-            default:
-                return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        if (this.role == UserRole.ADMIN) {
+            return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"),
+                    new SimpleGrantedAuthority("ROLE_USER"));
+        } else {
+            return List.of(new SimpleGrantedAuthority("ROLE_USER"));
         }
     }
 
