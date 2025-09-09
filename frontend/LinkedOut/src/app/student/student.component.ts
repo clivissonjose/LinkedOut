@@ -1,26 +1,34 @@
-import { Component, OnInit, inject, OnDestroy } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { HttpClient, HttpHeaders, HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
-import { StudentService, Estudante, Usuario } from './student.service';
+import { FormsModule } from '@angular/forms';
+
+interface Estudante {
+  id: number;
+  nomeCompleto: string;
+  dataNascimento: string;
+  cpf: string;
+  telefone?: string;
+  curso: string;
+  periodoAtual: number;
+  resumoAcademico: string;
+  usuarioId: number;
+}
 
 @Component({
   selector: 'app-student',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, HttpClientModule, FormsModule],
   templateUrl: './student.component.html',
   styleUrls: ['./student.component.css']
 })
-export class StudentComponent implements OnInit, OnDestroy {
+export class StudentComponent implements OnInit {
   private fb = inject(FormBuilder);
-  private studentService = inject(StudentService);
-  public authService = inject(AuthService);
-  private destroy$ = new Subject<void>();
+  private http = inject(HttpClient);
+  private authService = inject(AuthService);
 
-  usuarios: Usuario[] = [];
   estudantes: Estudante[] = [];
   mostrarFormulario = false;
   estudanteEditando: Estudante | null = null;
@@ -36,29 +44,16 @@ export class StudentComponent implements OnInit, OnDestroy {
     telefone: [''],
     curso: ['', Validators.required],
     periodoAtual: ['', [Validators.required, Validators.min(1)]],
-    resumoAcademico: ['', Validators.required],
-    userId: [null]
+    resumoAcademico: ['', Validators.required]
   });
 
   ngOnInit(): void {
     this.carregarEstudantes();
-    if (this.authService.hasRole('ADMIN')) {
-      this.buscarUsuarios();
-    }
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  buscarUsuarios() {
-    this.studentService.getUsuarios()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (dados) => this.usuarios = dados,
-        error: (erro) => console.error('Erro ao buscar usuários:', erro)
-      });
+  private getHeaders() {
+    const token = this.authService.getToken();
+    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
   get estudantesFiltrados(): Estudante[] {
@@ -72,27 +67,18 @@ export class StudentComponent implements OnInit, OnDestroy {
   }
 
   carregarEstudantes() {
-    this.studentService.getEstudantes()
-      .pipe(takeUntil(this.destroy$))
+    this.http.get<Estudante[]>('http://localhost:8080/student/list', { headers: this.getHeaders() })
       .subscribe({
         next: (dados) => this.estudantes = dados,
         error: (erro) => console.error('Erro ao carregar estudantes:', erro)
       });
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.formEstudante.invalid) return;
 
-    let userIdParaPayload = this.authService.getUserId();
-    if (this.authService.hasRole('ADMIN') && !this.estudanteEditando) {
-      if (!this.formEstudante.value.userId) {
-        alert('Como administrador, você deve selecionar um usuário para criar o perfil de estudante.');
-        return;
-      }
-      userIdParaPayload = this.formEstudante.value.userId;
-    }
-
     const formValue = this.formEstudante.value;
+
     const estudantePayload = {
       fullName: formValue.nomeCompleto,
       birthDate: formValue.dataNascimento,
@@ -101,54 +87,56 @@ export class StudentComponent implements OnInit, OnDestroy {
       course: formValue.curso,
       currentPeriod: formValue.periodoAtual,
       academicSummary: formValue.resumoAcademico,
-      userId: userIdParaPayload
+      userId: this.authService.getUserId()
     };
 
-    const action = this.estudanteEditando
-      ? this.studentService.updateEstudante(this.estudanteEditando.id, estudantePayload)
-      : this.studentService.createEstudante(estudantePayload);
-
-    action.pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
-        alert(`Perfil de estudante ${this.estudanteEditando ? 'atualizado' : 'cadastrado'} com sucesso!`);
-        this.cancelarCadastro();
-        this.carregarEstudantes();
-        if (!this.estudanteEditando && !this.authService.hasRole('ADMIN')) {
-          window.location.reload();
-        }
-      },
-      error: (error) => {
-        console.error('Erro ao salvar perfil:', error);
-        alert(`Erro ao salvar perfil: ${error.error?.message || 'Ocorreu um problema.'}`);
+    try {
+      if (this.estudanteEditando) {
+        await this.http.put(`http://localhost:8080/student/update/${this.estudanteEditando.id}`, estudantePayload, { headers: this.getHeaders() }).toPromise();
+        alert('Estudante atualizado com sucesso!');
+      } else {
+        await this.http.post('http://localhost:8080/students', estudantePayload, { headers: this.getHeaders() }).toPromise();
+        alert('Estudante cadastrado com sucesso!');
       }
-    });
+
+      this.formEstudante.reset();
+      this.mostrarFormulario = false;
+      this.estudanteEditando = null;
+      this.carregarEstudantes();
+    } catch (error) {
+      console.error('Erro ao salvar estudante:', error);
+      alert('Erro ao salvar estudante!');
+    }
   }
 
   editarEstudante(estudante: Estudante) {
     this.estudanteEditando = estudante;
     this.mostrarFormulario = true;
-    this.formEstudante.patchValue({
+
+    this.formEstudante.setValue({
       nomeCompleto: estudante.nomeCompleto,
       dataNascimento: estudante.dataNascimento,
       cpf: estudante.cpf,
       telefone: estudante.telefone || '',
       curso: estudante.curso,
       periodoAtual: estudante.periodoAtual,
-      resumoAcademico: estudante.resumoAcademico,
+      resumoAcademico: estudante.resumoAcademico
     });
   }
 
   excluirEstudante(id: number) {
-    if (!confirm('Deseja excluir este perfil de estudante? A ação não pode ser desfeita.')) return;
+    if (!confirm('Deseja excluir este estudante?')) return;
 
-    this.studentService.deleteEstudante(id)
-      .pipe(takeUntil(this.destroy$))
+    this.http.delete(`http://localhost:8080/student/delete/${id}`, { headers: this.getHeaders() })
       .subscribe({
         next: () => {
-          alert('Perfil excluído com sucesso!');
+          alert('Estudante excluído com sucesso!');
           this.carregarEstudantes();
         },
-        error: (erro) => console.error('Erro ao excluir perfil:', erro)
+        error: (erro) => {
+          console.error('Erro ao excluir estudante:', erro);
+          alert('Erro ao excluir estudante!');
+        }
       });
   }
 
@@ -156,11 +144,5 @@ export class StudentComponent implements OnInit, OnDestroy {
     this.formEstudante.reset();
     this.mostrarFormulario = false;
     this.estudanteEditando = null;
-  }
-
-  abrirFormularioCadastro() {
-    this.estudanteEditando = null;
-    this.formEstudante.reset();
-    this.mostrarFormulario = true;
   }
 }

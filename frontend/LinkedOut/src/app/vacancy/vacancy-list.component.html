@@ -1,47 +1,25 @@
 <section>
   <div class="vacancy-list">
     <h2>Vagas Disponíveis</h2>
+
     <div class="filtros">
-      <input type="text" placeholder="Filtrar por título" [(ngModel)]="filtroTitulo">
-      <input type="text" placeholder="Filtrar por localização (na descrição)" [(ngModel)]="filtroDescricao">
+      <input type="text" placeholder="Filtrar por título" [(ngModel)]="filtroCurso">
+      <input type="text" placeholder="Filtrar por localização" [(ngModel)]="filtroLocalizacao">
       <input type="text" placeholder="Filtrar por área" [(ngModel)]="filtroArea">
     </div>
 
-    <div *ngIf="vagasFiltradas.length === 0" class="sem-vagas">
-      <p>Nenhuma vaga disponível no momento ou com os filtros selecionados.</p>
+    <div *ngIf="vagasFiltradas.length === 0">
+      Nenhuma vaga disponível no momento.
     </div>
 
     <div *ngFor="let vacancy of vagasFiltradas" class="vacancy-card">
-      <h3>{{ vacancy.titulo }} - Empresa: {{ vacancy.nomeDaEmpresa }}</h3>
-      <p><strong>Área:</strong> {{ vacancy.areaDeAtuacao }}</p>
+      <h3>{{ vacancy.titulo }}</h3>
+      <p><strong>Área:</strong> {{ vacancy.area }}</p>
       <p><strong>Descrição:</strong> {{ vacancy.descricao }}</p>
       <p><strong>Requisitos:</strong> {{ vacancy.requisitos }}</p>
-      <p><strong>Benefícios:</strong> {{ vacancy.beneficios || 'Não informado' }}</p>
+      <p><strong>Benefícios:</strong> {{ vacancy.beneficios }}</p>
       <p><strong>Tipo:</strong> {{ vacancy.tipo }}</p>
-      <p><strong>Data de Término:</strong> {{ vacancy.dataTermino | date: 'dd/MM/yyyy' }}</p>
-
-      <div class="actions">
-        <ng-container *ngIf="authService.hasRole('STUDENT')">
-          <button *ngIf="!jaCandidatado(vacancy.id)" (click)="candidatarSe(vacancy.id)" class="btn-apply">
-            Candidatar-se
-          </button>
-          <button *ngIf="jaCandidatado(vacancy.id)" class="btn-applied" disabled>
-            Inscrito
-          </button>
-        </ng-container>
-
-        <ng-container *ngIf="isManagerOf(vacancy)">
-          <button (click)="verCandidaturas(vacancy.idDaEmpresa)" class="btn-view-apps">
-            Ver Candidaturas
-          </button>
-          <button (click)="editarVaga(vacancy.id)" class="btn-edit">
-            Editar
-          </button>
-          <button (click)="excluirVaga(vacancy.id)" class="btn-delete">
-            Excluir
-          </button>
-        </ng-container>
-      </div>
+      <p><strong>Data de Término:</strong> {{ vacancy.dataTermino | date }}</p>
     </div>
   </div>
 </section>

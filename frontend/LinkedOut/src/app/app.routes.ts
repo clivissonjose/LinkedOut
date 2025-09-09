@@ -5,11 +5,9 @@ import { HomeComponent } from './home/home.component';
 import { UnauthorizedComponent } from './auth/unauthorized/unauthorized.component';
 import { CompanyComponent } from './company/company.component';
 import { authGuard } from './auth/auth.guard';
-import { StudentComponent } from './student/student.component';
-import { VacancyFormComponent } from './vacancy/vacancy-form.component';
-import { VacancyListComponent } from './vacancy/vacancy-list.component';
-// ---> NOVO IMPORT <---
-import { ApplicationListComponent } from './company/application-list.component';
+import {StudentComponent} from './student/student.component';
+import {VacancyFormComponent} from './vacancy/vacancy-form.component';
+import {VacancyListComponent} from './vacancy/vacancy-list-component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -17,24 +15,10 @@ export const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'home', component: HomeComponent, canActivate: [authGuard] },
   { path: 'unauthorized', component: UnauthorizedComponent },
-
-  { path: 'empresas', component: CompanyComponent, canActivate: [authGuard] },
-  { path: 'vagas', component: VacancyListComponent, canActivate: [authGuard] },
-  { path: 'estudantes', component: StudentComponent, canActivate: [authGuard] },
-
-  {
-    path: 'empresa/:id/candidaturas',
-    component: ApplicationListComponent,
-    canActivate: [authGuard],
-    data: { roles: ['ADMIN', 'GESTOR'] }
-  },
-
-  {
-    path: 'empresa/:companyId/vaga/publicar',
-    component: VacancyFormComponent,
-    canActivate: [authGuard],
-    data: { roles: ['ADMIN', 'GESTOR'] }
-  },
-
+  { path: 'empresas', component: CompanyComponent },
+  {path: 'estudantes', component: StudentComponent},
+  { path: 'vaga/publicar', component: VacancyFormComponent, canActivate: [authGuard] },
+  { path: 'vagas', component: VacancyListComponent },
   { path: '**', redirectTo: 'login' }
+
 ];

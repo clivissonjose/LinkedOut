@@ -166,4 +166,9 @@ public class StudentService {
                 s.getUser().getEmail()
         );
     }
+
+    public List<Application> getApplicationsByStudentId(Long studentId) {
+        // Implement logic to fetch applications by studentId, for example:
+        return applicationRepository.findByStudentId(studentId);
+    }
 }

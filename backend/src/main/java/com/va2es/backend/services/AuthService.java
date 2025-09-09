@@ -2,8 +2,8 @@ package com.va2es.backend.services;
 
 import com.va2es.backend.dto.RegisterDTO;
 import com.va2es.backend.models.User;
-import com.va2es.backend.models.enums.UserRole;
 import com.va2es.backend.repositories.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -30,13 +30,12 @@ public class AuthService implements UserDetailsService {
         UserDetails userDetails = this.userRepository.findByEmail(registerDTO.getEmail());
 
         if (userDetails != null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email já cadastrado.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Email já cadastrado.");
         }
         String encriptedPassword = new BCryptPasswordEncoder().encode(registerDTO.getPassword());
 
-        // A role é definida como USER por padrão, direto no backend.
-        User user = new User(registerDTO.getEmail(), encriptedPassword, UserRole.USER, registerDTO.getNome());
-
+        User user = new User(registerDTO.getEmail(), encriptedPassword, registerDTO.getRole(), registerDTO.getNome());
         return this.userRepository.save(user);
     }
+
 }

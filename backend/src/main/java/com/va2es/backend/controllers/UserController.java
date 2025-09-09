@@ -1,11 +1,9 @@
 package com.va2es.backend.controllers;
 
-import com.va2es.backend.dto.RoleChangeRequestDTO;
 import com.va2es.backend.dto.UpdateNameDTO;
 import com.va2es.backend.models.User;
 import com.va2es.backend.services.UserService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -21,16 +19,6 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
-    }
-
-    @PostMapping("/change-role")
-    public ResponseEntity<Map<String, String>> changeRole(@Valid @RequestBody RoleChangeRequestDTO dto) {
-        try {
-            userService.changeUserRole(dto.getEmail(), dto.getPassword(), dto.getNewRole());
-            return ResponseEntity.ok(Map.of("message", "Role atualizada com sucesso para " + dto.getNewRole() + ". Por favor, faça login novamente para aplicar as mudanças."));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
-        }
     }
 
     @PutMapping("/name")

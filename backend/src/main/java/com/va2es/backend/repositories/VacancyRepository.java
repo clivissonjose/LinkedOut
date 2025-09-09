@@ -11,6 +11,5 @@ import java.util.List;
 public interface VacancyRepository extends JpaRepository<Vacancy, Long> {
    List<Vacancy> findByAreaAndTipo(String area, VacancyType vacancyType ); 
    List<Vacancy> findByAreaAndTipoAndDataLimiteBetween(String area, VacancyType vacancyType, LocalDate dataInico, LocalDate dataFim);
-    List<Vacancy> findByCompanyId(Long companyId);
    
 }

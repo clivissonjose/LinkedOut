@@ -1,76 +1,11 @@
 .vacancy-list {
   padding: 1rem;
 }
-.filtros {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-.filtros input {
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  width: 100%;
-}
+
 .vacancy-card {
   border: 1px solid #ccc;
   border-radius: 8px;
   margin: 1rem 0;
   padding: 1rem;
   background-color: #f9f9f9;
-}
-.actions {
-  margin-top: 1rem;
-  text-align: right;
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-.sem-vagas {
-  text-align: center;
-  margin-top: 2rem;
-  color: #555;
-}
-.btn-apply, .btn-applied, .btn-view-apps, .btn-edit, .btn-delete {
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-.btn-apply {
-  background-color: #6366f1;
-  color: white;
-}
-.btn-apply:hover {
-  background-color: #4f46e5;
-}
-.btn-applied {
-  background-color: #a5b4fc;
-  color: #4338ca;
-  cursor: not-allowed;
-}
-.btn-view-apps {
-  background-color: #10b981;
-  color: white;
-}
-.btn-view-apps:hover {
-  background-color: #059669;
-}
-.btn-edit {
-  background-color: #f59e0b;
-  color: white;
-}
-.btn-edit:hover {
-  background-color: #d97706;
-}
-.btn-delete {
-  background-color: #ef4444;
-  color: white;
-}
-.btn-delete:hover {
-  background-color: #dc2626;
 }

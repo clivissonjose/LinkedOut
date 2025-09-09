@@ -1,10 +1,8 @@
 package com.va2es.backend.models.enums;
 
 public enum UserRole {
-    USER("USER"),
-    STUDENT("STUDENT"),
-    GESTOR("GESTOR"),
-    ADMIN("ADMIN");
+    ADMIN("ADMIN"),
+    USER("USER");
 
     private final String role;
 
