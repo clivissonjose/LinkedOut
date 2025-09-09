@@ -18,17 +18,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
 
+    private static final String STUDENT_NOT_FOUND_MESSAGE = "Estudante não encontrado";
     private final VacancyRepository vacancyRepository;
-
     private final ApplicationRepository applicationRepository;
-
     private final StudentRepository studentRepository;
-
     private final UserRepository userRepository;
 
     StudentService(StudentRepository studentRepository, UserRepository userRepository, VacancyRepository vacancyRepository, ApplicationRepository applicationRepository) {
@@ -39,24 +36,24 @@ public class StudentService {
     }
 
     public StudentResponseDTO create(StudentRequestDTO dto) {
-        // valid cpf
-        if (studentRepository.existsByCpf(dto.cpf)) {
+        // valid cpf - Antes: dto.cpf | Agora: dto.getCpf()
+        if (studentRepository.existsByCpf(dto.getCpf())) {
             throw new IllegalArgumentException("Já existe um estudante com este CPF.");
         }
 
-        // find user and check if don´t exist
-        User user = userRepository.findById(dto.userId)
+        // find user and check if don´t exist - Antes: dto.userId | Agora: dto.getUserId()
+        User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
-        // create new student
+        // create new student - Usando getters para todos os campos do DTO
         Student student = new Student(null,
-                dto.fullName,
-                dto.birthDate,
-                dto.cpf,
-                dto.phone,
-                dto.course,
-                dto.currentPeriod,
-                dto.academicSummary,
+                dto.getFullName(),
+                dto.getBirthDate(),
+                dto.getCpf(),
+                dto.getPhone(),
+                dto.getCourse(),
+                dto.getCurrentPeriod(),
+                dto.getAcademicSummary(),
                 user);
         // save strudent
         studentRepository.save(student);
@@ -70,11 +67,10 @@ public class StudentService {
         return studentRepository.findAll()
                 .stream()
                 .map(this::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public StudentResponseDTO findById(Long id) {
-//        checkPermission(id); caso achar necessario
         // find user and check if don´t exist
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Estudante não foi encontrado"));
@@ -85,20 +81,20 @@ public class StudentService {
         checkPermission(id);
         // find user and check if don´t exist
         Student student = studentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Estudante não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException(STUDENT_NOT_FOUND_MESSAGE));
 
-        // update all filds one by one
-        if (dto.fullName != null) student.setFullName(dto.fullName);
-        if (dto.birthDate != null) student.setBirthDate(dto.birthDate);
-        if (dto.cpf != null) student.setCpf(dto.cpf);
-        if (dto.phone != null) student.setPhone(dto.phone);
-        if (dto.course != null) student.setCourse(dto.course);
-        if (dto.currentPeriod != null) student.setCurrentPeriod(dto.currentPeriod);
-        if (dto.academicSummary != null) student.setAcademicSummary(dto.academicSummary);
+        // update all filds one by one - Usando getters para todos os campos do DTO
+        if (dto.getFullName() != null) student.setFullName(dto.getFullName());
+        if (dto.getBirthDate() != null) student.setBirthDate(dto.getBirthDate());
+        if (dto.getCpf() != null) student.setCpf(dto.getCpf());
+        if (dto.getPhone() != null) student.setPhone(dto.getPhone());
+        if (dto.getCourse() != null) student.setCourse(dto.getCourse());
+        if (dto.getCurrentPeriod() != null) student.setCurrentPeriod(dto.getCurrentPeriod());
+        if (dto.getAcademicSummary() != null) student.setAcademicSummary(dto.getAcademicSummary());
 
         // valid user
-        if (dto.userId != null && !dto.userId.equals(student.getUser().getId())) {
-            User user = userRepository.findById(dto.userId)
+        if (dto.getUserId() != null && !dto.getUserId().equals(student.getUser().getId())) {
+            User user = userRepository.findById(dto.getUserId())
                     .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
             student.setUser(user);
         }
@@ -113,7 +109,7 @@ public class StudentService {
         checkPermission(id);
         // find user or check if don´t exist
         if (!studentRepository.existsById(id)) {
-            throw new EntityNotFoundException("Estudante não encontrado");
+            throw new EntityNotFoundException(STUDENT_NOT_FOUND_MESSAGE);
         }
         //delete in data base
         studentRepository.deleteById(id);
@@ -133,7 +129,7 @@ public class StudentService {
         Long userId = ((User) auth.getPrincipal()).getId();
 
         Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new EntityNotFoundException("Estudante não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException(STUDENT_NOT_FOUND_MESSAGE));
         if (!student.getUser().getId().equals(userId)) {
             throw new AccessDeniedException("Acesso negado: você só pode acessar o seu próprio cadastro.");
         }
@@ -141,7 +137,7 @@ public class StudentService {
 
     public void applyToVacancy(Long studentId, Long vacancyId) {
         Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new EntityNotFoundException("Estudante não encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException(STUDENT_NOT_FOUND_MESSAGE));
 
         checkPermission(studentId);
 
