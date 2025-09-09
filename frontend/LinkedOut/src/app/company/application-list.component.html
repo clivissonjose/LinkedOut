@@ -1,0 +1,39 @@
+<section class="applications-container">
+  <div *ngIf="isLoading; else content" class="loading-container">
+    <p>Carregando candidaturas...</p>
+  </div>
+
+  <ng-template #content>
+    <div class="header">
+      <button (click)="goBack()" class="back-button">&larr; Voltar para Vagas</button>
+      <h2 *ngIf="company">Candidaturas para {{ company.nomeDaEmpresa }}</h2>
+      <h2 *ngIf="!company">Candidaturas</h2>
+    </div>
+
+    <div *ngIf="vacanciesWithApplicants.length > 0; else noApplications">
+      <div *ngFor="let vacancy of vacanciesWithApplicants" class="vacancy-group">
+
+        <h3>Vaga: {{ vacancy.vacancyTitle }} ({{ vacancy.applicants.length }} candidato<span *ngIf="vacancy.applicants.length !== 1">s</span>)</h3>
+
+        <div *ngIf="vacancy.applicants.length > 0; else noApplicantsForVacancy">
+          <ul class="application-list">
+            <li *ngFor="let app of vacancy.applicants" class="application-item">
+              <p><strong>Candidato:</strong> {{ app.studentName }}</p>
+              <p><strong>Curso:</strong> {{ app.studentCourse }}</p>
+              <p><strong>Data da Inscrição:</strong> {{ app.applicationDate | date: 'dd/MM/yyyy HH:mm' }}</p>
+            </li>
+          </ul>
+        </div>
+
+        <ng-template #noApplicantsForVacancy>
+          <p style="padding: 1rem; text-align: center; color: #555;">Nenhum candidato inscrito nesta vaga.</p>
+        </ng-template>
+
+      </div>
+    </div>
+
+    <ng-template #noApplications>
+      <p class="no-applications-message">Nenhuma candidatura recebida para as vagas desta empresa ainda.</p>
+    </ng-template>
+  </ng-template>
+</section>
