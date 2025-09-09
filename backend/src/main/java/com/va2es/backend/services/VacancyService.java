@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class VacancyService {
@@ -57,7 +56,7 @@ public class VacancyService {
     public List<VacancyResponseDTO> findAll(){
         return vacancyRepository.findAll().stream()
                 .map(this::toDTO)
-                .collect(Collectors.toList());
+                .toList(); // Corrigido
     }
 
     public VacancyResponseDTO update(Long id, VacancyUpdateDTO vacancyUpdateDTO){
@@ -100,19 +99,20 @@ public class VacancyService {
     }
 
     private VacancyResponseDTO toDTO(Vacancy vaga){
-        return new VacancyResponseDTO(
-                vaga.getId(),
-                vaga.getTitulo(),
-                vaga.getDescricao(),
-                vaga.getRequisitos(),
-                vaga.getArea(),
-                vaga.getBeneficios(),
-                vaga.getTipo(),
-                vaga.getCompany().getId(),
-                vaga.getCompany().getNomeDaEmpresa(),
-                vaga.getDataPublicacao(),
-                vaga.getDataLimite()
-        );
+        // Usando o Builder que já implementamos no VacancyResponseDTO
+        return VacancyResponseDTO.builder()
+                .id(vaga.getId())
+                .titulo(vaga.getTitulo())
+                .descricao(vaga.getDescricao())
+                .requisitos(vaga.getRequisitos())
+                .areaDeAtuacao(vaga.getArea())
+                .beneficios(vaga.getBeneficios())
+                .tipo(vaga.getTipo())
+                .idDaEmpresa(vaga.getCompany().getId())
+                .nomeDaEmpresa(vaga.getCompany().getNomeDaEmpresa())
+                .dataPublicacao(vaga.getDataPublicacao())
+                .dataTermino(vaga.getDataLimite())
+                .build();
     }
 
     // Pega todas as vagas de acordo com a area e a tipo da vaga
@@ -120,7 +120,7 @@ public class VacancyService {
         List<Vacancy> filteredVacancies = vacancyRepository.findByAreaAndTipo(area, vacancyType);
         return filteredVacancies.stream()
                 .map(this::toDTO)
-                .collect(Collectors.toList());
+                .toList(); // Corrigido
     }
 
     // Pega as vagas que vão se encerrar durante um periodo
@@ -128,6 +128,6 @@ public class VacancyService {
         List<Vacancy> filteredVacancies = vacancyRepository.findByAreaAndTipoAndDataLimiteBetween(area, vacancyType, inicio, fim);
         return filteredVacancies.stream()
                 .map(this::toDTO)
-                .collect(Collectors.toList());
+                .toList(); // Corrigido
     }
 }
