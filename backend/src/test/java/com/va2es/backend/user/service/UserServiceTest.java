@@ -1,9 +1,5 @@
 package com.va2es.backend.user.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +10,12 @@ import com.va2es.backend.models.User;
 import com.va2es.backend.models.enums.UserRole;
 import com.va2es.backend.repositories.UserRepository;
 import com.va2es.backend.services.UserService;
-import com.va2es.backend.dto.RegisterDTO;
-import com.va2es.backend.dto.AuthDTO;
 
-import jakarta.persistence.EntityNotFoundException;
+import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class UserServiceTeste {
+public class UserServiceTest {
 
     @Autowired
     private UserRepository userRepository;
@@ -54,7 +48,7 @@ public class UserServiceTeste {
 
         userRepository.deleteById(user.getId());
 
-        assertTrue(!userRepository.existsById(user.getId()));
+        assertFalse(userRepository.existsById(user.getId()));
     }
 
     @Test
