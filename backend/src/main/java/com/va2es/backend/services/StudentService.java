@@ -46,15 +46,16 @@ public class StudentService {
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
         // create new student - Usando getters para todos os campos do DTO
-        Student student = new Student(null,
-                dto.getFullName(),
-                dto.getBirthDate(),
-                dto.getCpf(),
-                dto.getPhone(),
-                dto.getCourse(),
-                dto.getCurrentPeriod(),
-                dto.getAcademicSummary(),
-                user);
+        Student student = Student.builder()
+                .fullName(dto.getFullName())
+                .birthDate(dto.getBirthDate())
+                .cpf(dto.getCpf())
+                .phone(dto.getPhone())
+                .course(dto.getCourse())
+                .currentPeriod(dto.getCurrentPeriod())
+                .academicSummary(dto.getAcademicSummary())
+                .user(user)
+                .build();
         // save strudent
         studentRepository.save(student);
 
