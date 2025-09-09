@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.va2es.backend.models.Company;
+import org.springframework.stereotype.Repository;
 
+import com.va2es.backend.models.Company;
+@Repository
 public interface CompanyRepository extends JpaRepository<Company, Long> {
     List<Company> findByNomeDaEmpresaIgnoreCase(String nomeDaEmpresa);
     Optional<Company> findByCnpj(String cnpj);
