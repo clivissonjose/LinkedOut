@@ -59,7 +59,7 @@ public class StudentServiceTest {
     dto.fullName = "João Silva";
     dto.birthDate = LocalDate.of(2000, 1, 1);
     dto.cpf = "12345678900";
-    dto.phone = "999999999";
+    dto.phone = "9999999999";
     dto.course = "Ciência da Computação";
     dto.currentPeriod = 4;
     dto.academicSummary = "Bom aluno";
@@ -83,7 +83,7 @@ public class StudentServiceTest {
         dto.fullName = "Carlos Souza";
         dto.birthDate = LocalDate.of(2002, 3, 3);
         dto.cpf = "98765432100";
-        dto.phone = "666666666";
+        dto.phone = "6666666668";
         dto.course = "Medicina";
         dto.currentPeriod = 1;
         dto.academicSummary = "Resumo";
@@ -109,7 +109,7 @@ public class StudentServiceTest {
       dto.fullName = "João Silva";
       dto.birthDate = LocalDate.of(2000, 1, 1);
       dto.cpf = "12345678880";
-      dto.phone = "999999999";
+      dto.phone = "9999999999";
       dto.course = "Ciência da Computação";
       dto.currentPeriod = 4;
       dto.academicSummary = "Bom aluno";
@@ -153,7 +153,7 @@ public class StudentServiceTest {
       dto.fullName = "João Silva";
       dto.birthDate = LocalDate.of(2000, 1, 1);
       dto.cpf = "12345600880";
-      dto.phone = "999999999";
+      dto.phone = "9999999999";
       dto.course = "Ciência da Computação";
       dto.currentPeriod = 4;
       dto.academicSummary = "Bom aluno";
@@ -172,11 +172,11 @@ public class StudentServiceTest {
       assertEquals(response.cpf, found.cpf);
 
     }
-
+    @Test
     public void atualizarEstudanteComSucesso() {
         // cria e salva o usuário
         User user = new User(
-                "user@test6.com",
+                "user@test9.com",
                 "password123",
                 UserRole.ADMIN,
                 "João de Teste"
@@ -188,7 +188,7 @@ public class StudentServiceTest {
         dto.fullName = "João Silva";
         dto.birthDate = LocalDate.of(2000, 1, 1);
         dto.cpf = "12345678955";
-        dto.phone = "999999999";
+        dto.phone = "9999999990";
         dto.course = "Ciência da Computação";
         dto.currentPeriod = 4;
         dto.academicSummary = "Bom aluno";
@@ -230,7 +230,7 @@ public void naoDevePermitirDeletarEstudanteSemAutenticacao() {
     dto.fullName = "Maria Silva";
     dto.birthDate = LocalDate.of(2001, 2, 2);
     dto.cpf = "12312312399";
-    dto.phone = "999888777";
+    dto.phone = "9998887077";
     dto.course = "Engenharia";
     dto.currentPeriod = 3;
     dto.academicSummary = "Resumo";

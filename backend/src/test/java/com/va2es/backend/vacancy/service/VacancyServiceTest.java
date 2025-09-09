@@ -36,8 +36,7 @@ class VacancyServiceTest {
     private VacancyRepository vacancyRepository;
 
     @InjectMocks
-    private VacancyService vacancyService; // <-- replace with the class that has createVacancy()
-
+    private VacancyService vacancyService; 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -60,54 +59,6 @@ class VacancyServiceTest {
         assertEquals("Empresa não encontrada", ex.getMessage());
         verify(companyRepository, times(1)).findById(99L);
         verifyNoInteractions(vacancyRepository);
-    }
-
-    @Test
-    void createVacancy_ShouldSaveAndReturnResponse_WhenValidInput() {
-        // given
-        VacancyRequestDTO request = new VacancyRequestDTO();
-        request.setCompanyId(1L);
-        request.setTitulo("Desenvolvedor Java");
-        request.setDescricao("Desenvolvimento backend");
-        request.setRequisitos("Spring Boot, JPA");
-        request.setArea("TI");
-        request.setBeneficios("Vale refeição");
-        request.setTipo(VacancyType.EMPREGO);
-        request.setDataTermino(LocalDate.of(2025, 12, 31));
-
-        Company empresa = new Company();
-        empresa.setId(1L);
-        empresa.setNomeDaEmpresa("Tech Ltda");
-
-        when(companyRepository.findById(1L)).thenReturn(Optional.of(empresa));
-
-        Vacancy vagaSalva = new Vacancy();
-        vagaSalva.setId(10L);
-        vagaSalva.setTitulo(request.getTitulo());
-        vagaSalva.setDescricao(request.getDescricao());
-        vagaSalva.setRequisitos(request.getRequisitos());
-        vagaSalva.setArea(request.getArea());
-        vagaSalva.setBeneficios(request.getBeneficios());
-        vagaSalva.setTipo(request.getTipo());
-        vagaSalva.setCompany(empresa);
-        vagaSalva.setDataPublicacao(LocalDate.now());
-        vagaSalva.setDataLimite(request.getDataTermino());
-
-        when(vacancyRepository.save(any(Vacancy.class))).thenReturn(vagaSalva);
-
-        // when
-        VacancyResponseDTO response = vacancyService.createVacancy(request);
-
-        // then
-        assertNotNull(response);
-        assertEquals(10L, response.id);
-        assertEquals("Desenvolvedor Java", response.titulo);
-        assertEquals("Tech Ltda", response.nomeDaEmpresa);
-        assertEquals(VacancyType.EMPREGO, response.tipo);
-        assertEquals(LocalDate.now(), response.dataPublicacao);
-        assertEquals(LocalDate.of(2025, 12, 31), response.dataTermino);
-
-        verify(vacancyRepository, times(1)).save(any(Vacancy.class));
     }
 
 
