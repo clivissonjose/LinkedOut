@@ -3,7 +3,6 @@ package com.va2es.backend.services;
 import com.va2es.backend.dto.RegisterDTO;
 import com.va2es.backend.models.User;
 import com.va2es.backend.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
