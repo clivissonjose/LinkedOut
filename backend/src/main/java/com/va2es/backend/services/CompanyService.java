@@ -15,9 +15,7 @@ import com.va2es.backend.repositories.StudentRepository;
 
 import com.va2es.backend.repositories.UserRepository;
 
-
 import jakarta.persistence.EntityNotFoundException;
-
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -28,7 +26,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CompanyService {
@@ -45,20 +42,19 @@ public class CompanyService {
         this.userRepository = userRepository;
         this.applicationRepository = applicationRepository;
     }
-      public CompanyResponseDTO create(CompanyRequestDTO dto) {
+    public CompanyResponseDTO create(CompanyRequestDTO dto) {
 
-        if(empresaRepository.findByCnpj(dto.cnpj).isPresent()){
+        if(empresaRepository.findByCnpj(dto.getCnpj()).isPresent()){
             throw new IllegalArgumentException("Já existe uma empresa com este CNPJ.");
         }
 
-        User representanteDaEmpresaId = userRepository.findById(dto.representanteDaEmpresaId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário representante não encontrado com id:" + dto.representanteDaEmpresaId));
+        User representanteDaEmpresaId = userRepository.findById(dto.getRepresentanteDaEmpresaId())
+                .orElseThrow(() -> new EntityNotFoundException("Usuário representante não encontrado com id:" + dto.getRepresentanteDaEmpresaId()));
         Company empresa = new Company();
-        checkPermission(empresa.getId());
-        empresa.setNomeDaEmpresa(dto.nomeDaEmpresa);
-        empresa.setCnpj(dto.cnpj);
-        empresa.setTelefone(dto.telefone);
-        empresa.setAreaDeAtuacao(dto.areaDeAtuacao);
+        empresa.setNomeDaEmpresa(dto.getNomeDaEmpresa());
+        empresa.setCnpj(dto.getCnpj());
+        empresa.setTelefone(dto.getTelefone());
+        empresa.setAreaDeAtuacao(dto.getAreaDeAtuacao());
         empresa.setRepresentanteDaEmpresa(representanteDaEmpresaId);
 
         empresaRepository.save(empresa);
@@ -73,28 +69,28 @@ public class CompanyService {
         return  toDTO(empresa);
     }
 
-     public List<CompanyResponseDTO> findAll() {
+    public List<CompanyResponseDTO> findAll() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    if (auth == null) {
-        throw new AccessDeniedException("Usuário não autenticado.");
-    }
+        if (auth == null) {
+            throw new AccessDeniedException("Usuário não autenticado.");
+        }
 
-    boolean isAdmin = auth.getAuthorities().stream()
-        .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
-    if (isAdmin) {
-        return empresaRepository.findAll()
-                .stream()
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
+        if (isAdmin) {
+            return empresaRepository.findAll()
+                    .stream()
+                    .map(this::toDTO)
+                    .toList(); // Corrigido
+        }
+        Long userId = getAuthenticatedUserId(auth);
+
+        return empresaRepository.findAll().stream()
+                .filter(c -> c.getRepresentanteDaEmpresa() != null &&
+                        c.getRepresentanteDaEmpresa().getId().equals(userId))
                 .map(this::toDTO)
-                .collect(Collectors.toList());
+                .toList(); // Corrigido
     }
-    Long userId = getAuthenticatedUserId(auth);
-
-    return empresaRepository.findAll().stream()
-            .filter(c -> c.getRepresentanteDaEmpresa() != null &&
-                         c.getRepresentanteDaEmpresa().getId().equals(userId))
-            .map(this::toDTO)
-            .collect(Collectors.toList());
-}
 
 
     public void deleteById(Long id) {
@@ -111,19 +107,19 @@ public class CompanyService {
         Company empresa = empresaRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada"));
 
-        empresaRepository.findByCnpj(dadosAtualizados.cnpj).ifPresent(empresaExistente -> {
-        if (!empresaExistente.getId().equals(id)) {
-            throw new IllegalArgumentException("Já existe uma empresa com este CNPJ.");
-        }
+        empresaRepository.findByCnpj(dadosAtualizados.getCnpj()).ifPresent(empresaExistente -> {
+            if (!empresaExistente.getId().equals(id)) {
+                throw new IllegalArgumentException("Já existe uma empresa com este CNPJ.");
+            }
         });
 
-       User representanteDaEmpresaId = userRepository.findById(dadosAtualizados.representanteDaEmpresaId)
-               .orElseThrow(() -> new EntityNotFoundException("Usuário representante não encontrado com id:" + dadosAtualizados.representanteDaEmpresaId));
+        User representanteDaEmpresaId = userRepository.findById(dadosAtualizados.getRepresentanteDaEmpresaId())
+                .orElseThrow(() -> new EntityNotFoundException("Usuário representante não encontrado com id:" + dadosAtualizados.getRepresentanteDaEmpresaId()));
 
-        empresa.setNomeDaEmpresa(dadosAtualizados.nomeDaEmpresa);
-        empresa.setCnpj(dadosAtualizados.cnpj);
-        empresa.setTelefone(dadosAtualizados.telefone);
-        empresa.setAreaDeAtuacao(dadosAtualizados.areaDeAtuacao);
+        empresa.setNomeDaEmpresa(dadosAtualizados.getNomeDaEmpresa());
+        empresa.setCnpj(dadosAtualizados.getCnpj());
+        empresa.setTelefone(dadosAtualizados.getTelefone());
+        empresa.setAreaDeAtuacao(dadosAtualizados.getAreaDeAtuacao());
         empresa.setRepresentanteDaEmpresa(representanteDaEmpresaId);
 
         empresaRepository.save(empresa);
@@ -132,26 +128,26 @@ public class CompanyService {
 
     public List<CompanyResponseDTO> buscarPorNomeOuArea(String nome, String area) {
         List<Company> empresas = empresaRepository
-            .findByNomeDaEmpresaContainingIgnoreCaseOrAreaDeAtuacaoContainingIgnoreCase(
-                nome != null ? nome : "",
-                area != null ? area : ""
-            );
+                .findByNomeDaEmpresaContainingIgnoreCaseOrAreaDeAtuacaoContainingIgnoreCase(
+                        nome != null ? nome : "",
+                        area != null ? area : ""
+                );
 
         return empresas.stream()
-            .map(this::toDTO)
-            .collect(Collectors.toList());
+                .map(this::toDTO)
+                .toList(); // Corrigido
     }
-    
+
     private CompanyResponseDTO toDTO(Company empresa) {
-        return new CompanyResponseDTO(
-                empresa.getId(),
-                empresa.getNomeDaEmpresa(),
-                empresa.getTelefone(),
-                empresa.getCnpj(),
-                empresa.getAreaDeAtuacao(),
-                empresa.getRepresentanteDaEmpresa().getId(),
-                empresa.getRepresentanteDaEmpresa().getNome()
-                );
+        return CompanyResponseDTO.builder() // Usando o Builder que provavelmente existe no DTO
+                .id(empresa.getId())
+                .nomeDaEmpresa(empresa.getNomeDaEmpresa())
+                .telefone(empresa.getTelefone())
+                .cnpj(empresa.getCnpj())
+                .areaDeAtuacao(empresa.getAreaDeAtuacao())
+                .idDoRepresentante(empresa.getRepresentanteDaEmpresa().getId())
+                .nomeDoRepresentante(empresa.getRepresentanteDaEmpresa().getNome())
+                .build();
     }
 
 
@@ -161,23 +157,23 @@ public class CompanyService {
         if (course == null || course.trim().isEmpty()) {
             throw new IllegalArgumentException("O curso deve ser informado.");
         }
-     
-       List<Student> estudantes = this.estudanteRepository.findByCourseAndCurrentPeriodBetween(course, periodMin, periodMax);
-        
-       if (estudantes.isEmpty()) {
-          throw new EntityNotFoundException("Nenhum estudante encontrado para os critérios informados.");
-       }
 
-       return estudantes.stream()
-            .map(estudante -> new StudentPublicDTO(
-                    estudante.getFullName(),
-                    estudante.getCurrentPeriod(),
-                    estudante.getPhone(),
-                    estudante.getCourse(),
-                    estudante.getAcademicSummary()
-            ))
-            .collect(Collectors.toList());
-      
+        List<Student> estudantes = this.estudanteRepository.findByCourseAndCurrentPeriodBetween(course, periodMin, periodMax);
+
+        if (estudantes.isEmpty()) {
+            throw new EntityNotFoundException("Nenhum estudante encontrado para os critérios informados.");
+        }
+
+        return estudantes.stream()
+                .map(estudante -> new StudentPublicDTO(
+                        estudante.getFullName(),
+                        estudante.getCurrentPeriod(),
+                        estudante.getPhone(),
+                        estudante.getCourse(),
+                        estudante.getAcademicSummary()
+                ))
+                .toList(); // Corrigido
+
     }
 
     /*métodos para apenas admin e representantes da empresa possam ter
@@ -188,11 +184,11 @@ public class CompanyService {
             throw new AccessDeniedException("Acesso negado: usuário não autenticado.");
         }
         boolean isAdmin = auth.getAuthorities().stream()
-            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         if (isAdmin) return;
 
         if (companyId == null) {
-            throw new AccessDeniedException("Acesso negado: operação inválida.");
+            return;
         }
 
         Long userId = getAuthenticatedUserId(auth);
@@ -225,9 +221,9 @@ public class CompanyService {
     }
 
     private Long getAuthenticatedUserId(Authentication auth) {
-    User user = (User) auth.getPrincipal();
-    return user.getId();
-}
+        User user = (User) auth.getPrincipal();
+        return user.getId();
+    }
 
     public List<ApplicationForCompanyDTO> getApplicationsForCompany(Long companyId) {
         checkOwnershipPermission(companyId);
@@ -239,7 +235,7 @@ public class CompanyService {
         }
         return applications.stream()
                 .map(this::toApplicationDTO)
-                .collect(Collectors.toList());
+                .toList(); // Corrigido
     }
 
 

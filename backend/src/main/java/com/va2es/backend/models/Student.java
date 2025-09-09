@@ -32,23 +32,8 @@ public class Student {
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
-    // Construtor vazio
-    public Student() {}
+    // O construtor longo foi removido para resolver a issue do SonarCloud
 
-    // Construtor completo
-    public Student(Long id, String fullName, LocalDate birthDate, String cpf, String phone, String course, int currentPeriod, String academicSummary, User user) {
-        this.id = id;
-        this.fullName = fullName;
-        this.birthDate = birthDate;
-        this.cpf = cpf;
-        this.phone = phone;
-        this.course = course;
-        this.currentPeriod = currentPeriod;
-        this.academicSummary = academicSummary;
-        this.user = user;
-    }
-
-    // Getters e Setters
     public Long getId() {
         return id;
     }
@@ -119,5 +104,49 @@ public class Student {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    // Método estático para iniciar a construção do objeto
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    // Classe interna estática Builder
+    public static final class Builder {
+        private Long id;
+        private String fullName;
+        private LocalDate birthDate;
+        private String cpf;
+        private String phone;
+        private String course;
+        private int currentPeriod;
+        private String academicSummary;
+        private User user;
+
+        private Builder() {}
+
+        public Builder id(Long id) { this.id = id; return this; }
+        public Builder fullName(String fullName) { this.fullName = fullName; return this; }
+        public Builder birthDate(LocalDate birthDate) { this.birthDate = birthDate; return this; }
+        public Builder cpf(String cpf) { this.cpf = cpf; return this; }
+        public Builder phone(String phone) { this.phone = phone; return this; }
+        public Builder course(String course) { this.course = course; return this; }
+        public Builder currentPeriod(int currentPeriod) { this.currentPeriod = currentPeriod; return this; }
+        public Builder academicSummary(String academicSummary) { this.academicSummary = academicSummary; return this; }
+        public Builder user(User user) { this.user = user; return this; }
+
+        public Student build() {
+            Student student = new Student();
+            student.setId(this.id);
+            student.setFullName(this.fullName);
+            student.setBirthDate(this.birthDate);
+            student.setCpf(this.cpf);
+            student.setPhone(this.phone);
+            student.setCourse(this.course);
+            student.setCurrentPeriod(this.currentPeriod);
+            student.setAcademicSummary(this.academicSummary);
+            student.setUser(this.user);
+            return student;
+        }
     }
 }
